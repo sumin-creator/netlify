@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>JavaScript Test</h1>
+    <button onclick="testSwitchTab()">Test switchTab</button>
+    <button onclick="testLoadFile()">Test File Load</button>
+    <div id="test-result"></div>
+    
+    <script>
+        function testSwitchTab() {
+            const result = document.getElementById('test-result');
+            try {
+                if (typeof switchTab === 'function') {
+                    result.innerHTML = '✓ switchTab function exists';
+                    switchTab('stargan', document.querySelector('.tab'));
+                } else {
+                    result.innerHTML = '✗ switchTab function NOT found';
+                }
+            } catch (e) {
+                result.innerHTML = '✗ Error: ' + e.message;
+            }
+        }
+        
+        function testLoadFile() {
+            const result = document.getElementById('test-result');
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'audio/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    result.innerHTML = '✓ File selected: ' + file.name;
+                }
+            };
+            input.click();
+        }
+    </script>
+    
+    <script src="research_advanced.js"></script>
+</body>
+</html>
+

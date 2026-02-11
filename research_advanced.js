@@ -19,19 +19,45 @@ function initAudioContext() {
 }
 
 // Tab switching
-function switchTab(tabName) {
+function switchTab(tabName, clickedElement) {
+    console.log('Switching to tab:', tabName);
+    
+    // すべてのタブコンテンツを非表示
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
+    
+    // すべてのタブボタンを非アクティブに
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    document.getElementById(tabName).classList.add('active');
-    event.target.classList.add('active');
+    
+    // 選択されたタブコンテンツを表示
+    const targetContent = document.getElementById(tabName);
+    if (!targetContent) {
+        console.error('Tab content not found:', tabName);
+        return;
+    }
+    targetContent.classList.add('active');
+    
+    // クリックされたタブボタンをアクティブに
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    } else {
+        // onclickから呼ばれた場合、event.targetを使用
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            if (tab.textContent.includes(tabName.split(/(?=[A-Z])/).join('-'))) {
+                tab.classList.add('active');
+            }
+        });
+    }
+    
+    console.log('Tab switched successfully');
     
     // Re-render MathJax
     if (window.MathJax) {
-        MathJax.typesetPromise();
+        MathJax.typesetPromise().catch(err => console.error('MathJax error:', err));
     }
 }
 
@@ -41,33 +67,65 @@ let cycleganSourceBuffer = null;
 let cycleganTargetBuffer = null;
 
 async function loadCycleGANSource() {
-    const file = document.getElementById('cyclegan-source').files[0];
-    if (!file) {
-        console.log('No file selected');
+    console.log('loadCycleGANSource called');
+    const fileInput = document.getElementById('cyclegan-source');
+    if (!fileInput) {
+        console.error('cyclegan-source input not found');
+        alert('エラー: ファイル入力要素が見つかりません');
         return;
     }
     
+    const file = fileInput.files[0];
+    if (!file) {
+        console.log('No file selected');
+        alert('ファイルを選択してください');
+        return;
+    }
+    
+    console.log('File selected:', file.name, file.type, file.size, 'bytes');
+    
     try {
         initAudioContext();
-        const url = URL.createObjectURL(file);
-        document.getElementById('cyclegan-source-audio').src = url;
+        console.log('AudioContext initialized');
         
+        const url = URL.createObjectURL(file);
+        const audioEl = document.getElementById('cyclegan-source-audio');
+        if (audioEl) {
+            audioEl.src = url;
+            audioEl.load();
+            console.log('Audio element updated');
+        } else {
+            console.error('cyclegan-source-audio element not found');
+        }
+        
+        console.log('Loading audio buffer...');
         const buffer = await loadAudioBuffer(file);
         cycleganSourceBuffer = buffer;
-        console.log('Audio loaded:', buffer.duration, 'seconds');
+        console.log('Audio loaded successfully:', buffer.duration, 'seconds', buffer.sampleRate, 'Hz');
         
         // 可視化
-        drawMelSpectrogram(buffer, 'cyclegan-source-spec');
+        const canvasId = 'cyclegan-source-spec';
+        const canvas = document.getElementById(canvasId);
+        if (canvas) {
+            console.log('Drawing mel-spectrogram...');
+            drawMelSpectrogram(buffer, canvasId);
+            console.log('Mel-spectrogram drawn');
+        } else {
+            console.error('Canvas not found:', canvasId);
+        }
         
         // ユーザーにフィードバック
         const statusEl = document.getElementById('cyclegan-source-status');
         if (statusEl) {
-            statusEl.textContent = `✓ Loaded: ${file.name} (${buffer.duration.toFixed(2)}s)`;
+            statusEl.textContent = `✓ Loaded: ${file.name} (${buffer.duration.toFixed(2)}s, ${buffer.sampleRate}Hz)`;
             statusEl.style.color = '#51cf66';
+            statusEl.style.fontWeight = 'bold';
         }
+        
+        alert(`✓ ファイルを読み込みました: ${file.name}\n長さ: ${buffer.duration.toFixed(2)}秒`);
     } catch (error) {
         console.error('Error loading audio:', error);
-        alert('音声ファイルの読み込みに失敗しました: ' + error.message);
+        alert('音声ファイルの読み込みに失敗しました: ' + error.message + '\n詳細はコンソールを確認してください');
     }
 }
 
@@ -888,13 +946,32 @@ function audioBufferToWavBlob(buffer) {
 }
 
 function drawMelSpectrogram(buffer, canvasId) {
+    console.log('drawMelSpectrogram called with canvasId:', canvasId);
     const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+        console.error('Canvas not found:', canvasId);
+        alert('エラー: キャンバス要素が見つかりません: ' + canvasId);
+        return;
+    }
+    
     const ctx = canvas.getContext('2d');
-    const width = canvas.width = canvas.offsetWidth * 2;
+    if (!ctx) {
+        console.error('Could not get 2d context');
+        return;
+    }
+    
+    const width = canvas.width = (canvas.offsetWidth || 400) * 2;
     const height = canvas.height = 300 * 2;
+    
+    console.log('Canvas size:', width, 'x', height);
     
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, width, height);
+    
+    if (!buffer || !buffer.getChannelData) {
+        console.error('Invalid buffer');
+        return;
+    }
     
     const data = buffer.getChannelData(0);
     const sampleRate = buffer.sampleRate;
@@ -903,18 +980,26 @@ function drawMelSpectrogram(buffer, canvasId) {
     const melBins = 80;
     const timeSteps = Math.floor(data.length / hopSize);
     
+    console.log('Drawing spectrogram:', timeSteps, 'time steps,', melBins, 'mel bins, data length:', data.length);
+    
     for (let t = 0; t < timeSteps && t < width; t++) {
         const start = t * hopSize;
-        const frame = data.slice(start, start + fftSize);
+        const end = Math.min(start + fftSize, data.length);
+        const frame = data.slice(start, end);
         
         // Simplified mel-spectrogram
         for (let m = 0; m < melBins && m < height; m++) {
-            const intensity = Math.abs(frame[Math.floor(m * fftSize / melBins)]) * 10;
-            const hue = 240 - Math.min(intensity, 1) * 180;
-            ctx.fillStyle = `hsl(${hue}, 100%, ${50 + Math.min(intensity, 1) * 30}%)`;
-            ctx.fillRect(t, height - m, 1, 1);
+            const idx = Math.floor(m * frame.length / melBins);
+            if (idx < frame.length) {
+                const intensity = Math.min(Math.abs(frame[idx]) * 20, 1);
+                const hue = 240 - intensity * 180;
+                ctx.fillStyle = `hsl(${hue}, 100%, ${50 + intensity * 30}%)`;
+                ctx.fillRect(t, height - m - 1, 1, 1);
+            }
         }
     }
+    
+    console.log('Mel-spectrogram drawn successfully');
 }
 
 function drawWaveform(buffer, canvasId) {
@@ -984,22 +1069,33 @@ function drawMFCC(mfccData, canvasId) {
 }
 
 // Initialize
-window.onload = () => {
+window.addEventListener('DOMContentLoaded', () => {
     console.log('Initializing Voice Conversion Research Platform...');
+    
+    // AudioContextの初期化
     initAudioContext();
+    console.log('AudioContext initialized');
     
     // パラメータの初期化
-    if (document.getElementById('lambda-cyc')) {
-        updateCycleGANParams();
-    }
-    if (document.getElementById('lambda-cls')) {
-        updateStarGANParams();
-    }
-    if (document.getElementById('content-dim')) {
-        updateAutoVCParams();
-    }
-    if (document.getElementById('lambda-kl')) {
-        updateVITSParams();
+    try {
+        if (document.getElementById('lambda-cyc')) {
+            updateCycleGANParams();
+            console.log('CycleGAN params initialized');
+        }
+        if (document.getElementById('lambda-cls')) {
+            updateStarGANParams();
+            console.log('StarGAN params initialized');
+        }
+        if (document.getElementById('content-dim')) {
+            updateAutoVCParams();
+            console.log('AutoVC params initialized');
+        }
+        if (document.getElementById('lambda-kl')) {
+            updateVITSParams();
+            console.log('VITS params initialized');
+        }
+    } catch (error) {
+        console.error('Error initializing params:', error);
     }
     
     // MathJaxの初期化
@@ -1009,6 +1105,21 @@ window.onload = () => {
         });
     }
     
-    console.log('Platform initialized');
+    // タブのイベントリスナーを設定（フォールバック）
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            const tabName = this.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+            if (tabName) {
+                switchTab(tabName, this);
+            }
+        });
+    });
+    
+    console.log('Platform initialized successfully');
+});
+
+// フォールバック: window.onloadも設定
+window.onload = () => {
+    console.log('Window loaded');
 };
 

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Debug Test</title></head>
+<body>
+<h1>Debug Test</h1>
+<button onclick="test()">Test</button>
+<div id="result"></div>
+<script src="research_advanced.js"></script>
+<script>
+function test() {
+    const r = document.getElementById('result');
+    r.innerHTML = 'Testing...<br>';
+    r.innerHTML += 'switchTab exists: ' + (typeof switchTab === 'function') + '<br>';
+    r.innerHTML += 'loadCycleGANSource exists: ' + (typeof loadCycleGANSource === 'function') + '<br>';
+    r.innerHTML += 'initAudioContext exists: ' + (typeof initAudioContext === 'function') + '<br>';
+    
+    const cycleganTab = document.getElementById('cyclegan');
+    r.innerHTML += 'cyclegan tab exists: ' + (cycleganTab !== null) + '<br>';
+    
+    if (typeof switchTab === 'function') {
+        try {
+            switchTab('stargan', null);
+            r.innerHTML += 'switchTab called successfully<br>';
+        } catch(e) {
+            r.innerHTML += 'switchTab error: ' + e.message + '<br>';
+        }
+    }
+}
+</script>
+</body>
+</html>

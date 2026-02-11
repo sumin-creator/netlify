@@ -433,13 +433,13 @@
         </header>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('cyclegan')">CycleGAN-VC</button>
-            <button class="tab" onclick="switchTab('stargan')">StarGAN-VC</button>
-            <button class="tab" onclick="switchTab('autovc')">AutoVC</button>
-            <button class="tab" onclick="switchTab('vits')">VITS</button>
-            <button class="tab" onclick="switchTab('wavenet')">WaveNet</button>
-            <button class="tab" onclick="switchTab('analysis')">Spectral Analysis</button>
-            <button class="tab" onclick="switchTab('experiments')">Experiments</button>
+            <button class="tab active" onclick="switchTab('cyclegan', this)">CycleGAN-VC</button>
+            <button class="tab" onclick="switchTab('stargan', this)">StarGAN-VC</button>
+            <button class="tab" onclick="switchTab('autovc', this)">AutoVC</button>
+            <button class="tab" onclick="switchTab('vits', this)">VITS</button>
+            <button class="tab" onclick="switchTab('wavenet', this)">WaveNet</button>
+            <button class="tab" onclick="switchTab('analysis', this)">Spectral Analysis</button>
+            <button class="tab" onclick="switchTab('experiments', this)">Experiments</button>
         </div>
 
         <!-- CycleGAN-VC Tab -->
@@ -472,9 +472,9 @@
             <div class="grid">
                 <div class="panel">
                     <h3>🎤 Source Voice Input</h3>
-                    <input type="file" id="cyclegan-source" accept="audio/*" onchange="loadCycleGANSource()">
+                    <input type="file" id="cyclegan-source" accept="audio/wav,audio/*" onchange="loadCycleGANSource()" style="margin-bottom: 10px;">
+                    <div id="cyclegan-source-status" style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 0.9em; min-height: 20px;"></div>
                     <audio id="cyclegan-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
-                    <div id="cyclegan-source-status" style="margin: 10px 0; color: #666; font-size: 0.9em;"></div>
                     <div class="info-box">
                         <strong>Input:</strong> Source speaker's voice sample (WAV形式推奨)
                     </div>
