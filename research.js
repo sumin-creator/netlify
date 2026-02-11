@@ -1,25 +1,10 @@
-// 音声合成研究プラットフォーム - JavaScript実装
+// 音声合成研究プラットフォーム - JavaScript実装（レガシー関数）
+// 注意: research_advanced.jsがメインの実装です
 
-// グローバル変数
-let audioContext = null;
-let currentAudioBuffer = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-let isRecording = false;
+// グローバル変数は research_advanced.js で定義されているため、ここでは宣言しない
+// audioContext, API_BASE などは research_advanced.js から使用
 
-// APIベースURL（ローカル開発用）
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'
-    : '/api';
-
-// Audio Context初期化
-function initAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-}
-
-// タブ切り替え（research_advanced.jsで上書きされる）
+// タブ切り替え（research_advanced.jsで実装）
 function switchTab(tabName) {
     // research_advanced.jsで実装
 }
@@ -27,26 +12,46 @@ function switchTab(tabName) {
 // ========== フォルマント合成 ==========
 
 function initFormantSynthesis() {
-    initAudioContext();
-    updateFormant();
+    // フォルマント合成の初期化（要素が存在する場合のみ）
+    const f0El = document.getElementById('f0-formant');
+    if (f0El) {
+        if (typeof initAudioContext === 'function') {
+            initAudioContext();
+        }
+        if (typeof updateFormant === 'function') {
+            updateFormant();
+        }
+    }
 }
 
 function updateFormant() {
-    const f0 = parseInt(document.getElementById('f0-formant').value);
-    const f1 = parseInt(document.getElementById('f1-formant').value);
-    const f2 = parseInt(document.getElementById('f2-formant').value);
-    const f3 = parseInt(document.getElementById('f3-formant').value);
-    const b1 = parseInt(document.getElementById('b1').value);
-    const b2 = parseInt(document.getElementById('b2').value);
+    // 要素の存在確認
+    const f0El = document.getElementById('f0-formant');
+    if (!f0El) return; // 要素が存在しない場合は何もしない
     
-    document.getElementById('f0-formant-value').textContent = f0 + ' Hz';
-    document.getElementById('f1-formant-value').textContent = f1 + ' Hz';
-    document.getElementById('f2-formant-value').textContent = f2 + ' Hz';
-    document.getElementById('f3-formant-value').textContent = f3 + ' Hz';
-    document.getElementById('b1-value').textContent = b1 + ' Hz';
-    document.getElementById('b2-value').textContent = b2 + ' Hz';
+    const f0 = parseInt(f0El.value || 150);
+    const f1 = parseInt(document.getElementById('f1-formant')?.value || 700);
+    const f2 = parseInt(document.getElementById('f2-formant')?.value || 1200);
+    const f3 = parseInt(document.getElementById('f3-formant')?.value || 2500);
+    const b1 = parseInt(document.getElementById('b1')?.value || 100);
+    const b2 = parseInt(document.getElementById('b2')?.value || 150);
     
-    drawFormantSpectrum(f0, f1, f2, f3, b1, b2);
+    const f0Val = document.getElementById('f0-formant-value');
+    if (f0Val) f0Val.textContent = f0 + ' Hz';
+    const f1Val = document.getElementById('f1-formant-value');
+    if (f1Val) f1Val.textContent = f1 + ' Hz';
+    const f2Val = document.getElementById('f2-formant-value');
+    if (f2Val) f2Val.textContent = f2 + ' Hz';
+    const f3Val = document.getElementById('f3-formant-value');
+    if (f3Val) f3Val.textContent = f3 + ' Hz';
+    const b1Val = document.getElementById('b1-value');
+    if (b1Val) b1Val.textContent = b1 + ' Hz';
+    const b2Val = document.getElementById('b2-value');
+    if (b2Val) b2Val.textContent = b2 + ' Hz';
+    
+    if (typeof drawFormantSpectrum === 'function') {
+        drawFormantSpectrum(f0, f1, f2, f3, b1, b2);
+    }
 }
 
 function drawFormantSpectrum(f0, f1, f2, f3, b1, b2) {
@@ -810,9 +815,6 @@ function audioBufferToWav(buffer) {
     return arrayBuffer;
 }
 
-// 初期化
-window.onload = () => {
-    initAudioContext();
-    initFormantSynthesis();
-};
+// 初期化（research_advanced.jsで実装されているため、ここでは実行しない）
+// window.onload は research_advanced.js で処理される
 

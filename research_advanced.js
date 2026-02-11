@@ -1,21 +1,38 @@
 // Advanced Voice Conversion Research Platform - JavaScript Implementation
 // ICASSP / Interspeech / ICML Level Research Implementation
 
-// Global variables
-let audioContext = null;
-let experimentLog = [];
-let currentExperiments = {};
+// Global variables (グローバルスコープで一度だけ宣言)
+// research.jsとの競合を避けるため、windowオブジェクトに保存
+if (typeof window.audioContext === 'undefined') {
+    window.audioContext = null;
+}
+if (typeof window.experimentLog === 'undefined') {
+    window.experimentLog = [];
+}
+if (typeof window.currentExperiments === 'undefined') {
+    window.currentExperiments = {};
+}
+
+// ローカル変数としても定義（後方互換性のため）
+var audioContext = window.audioContext;
+var experimentLog = window.experimentLog;
+var currentExperiments = window.currentExperiments;
 
 // API Base URL
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'
-    : '/api';
+if (typeof window.API_BASE === 'undefined') {
+    window.API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000/api'
+        : '/api';
+}
+var API_BASE = window.API_BASE;
 
 // Initialize Audio Context
 function initAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (!window.audioContext) {
+        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContext = window.audioContext; // ローカル変数も更新
     }
+    return window.audioContext;
 }
 
 // Tab switching
@@ -63,8 +80,9 @@ function switchTab(tabName, clickedElement) {
 
 // ========== CycleGAN-VC ==========
 
-let cycleganSourceBuffer = null;
-let cycleganTargetBuffer = null;
+// CycleGAN-VC用のバッファ
+var cycleganSourceBuffer = null;
+var cycleganTargetBuffer = null;
 
 async function loadCycleGANSource() {
     console.log('loadCycleGANSource called');
@@ -213,7 +231,7 @@ async function convertCycleGAN() {
             logExperiment('CycleGAN-VC', {
                 lambda_cyc: lambdaCyc,
                 lambda_id: lambdaId,
-                source_file: document.getElementById('cyclegan-source').files[0]?.name
+                source_file: document.getElementById('cyclegan-source')?.files[0]?.name || 'unknown'
             });
             
             alert('✓ 音声変換が完了しました！');
@@ -334,13 +352,14 @@ function saveCycleGANExperiment() {
         }
     };
     
-    experimentLog.push(experiment);
+    window.experimentLog.push(experiment);
+    experimentLog = window.experimentLog; // ローカル変数も更新
     updateExperimentLog();
 }
 
 // ========== StarGAN-VC ==========
 
-let starganSourceBuffer = null;
+var starganSourceBuffer = null;
 
 async function loadStarGANSource() {
     const file = document.getElementById('stargan-source').files[0];
@@ -452,8 +471,8 @@ function applyStarGANTransform(buffer) {
 
 // ========== AutoVC ==========
 
-let autovcSourceBuffer = null;
-let autovcTargetBuffer = null;
+var autovcSourceBuffer = null;
+var autovcTargetBuffer = null;
 
 function loadAutoVCSource() {
     const file = document.getElementById('autovc-source').files[0];
@@ -654,7 +673,7 @@ function visualizeVITS() {
 
 // ========== WaveNet ==========
 
-let wavenetInputBuffer = null;
+var wavenetInputBuffer = null;
 
 function loadWaveNetInput() {
     const file = document.getElementById('wavenet-input').files[0];
@@ -725,7 +744,7 @@ function visualizeWaveNet() {
 
 // ========== Spectral Analysis ==========
 
-let analysisInputBuffer = null;
+var analysisInputBuffer = null;
 
 function loadAnalysisInput() {
     const file = document.getElementById('analysis-input').files[0];
@@ -811,19 +830,23 @@ function logExperiment(method, params) {
         params: params
     };
     
-    experimentLog.push(experiment);
+    window.experimentLog.push(experiment);
+    experimentLog = window.experimentLog; // ローカル変数も更新
     updateExperimentLog();
 }
 
 function updateExperimentLog() {
     const logDiv = document.getElementById('experiment-log');
-    if (experimentLog.length === 0) {
+    if (!logDiv) return; // 要素が存在しない場合は何もしない
+    
+    const logs = window.experimentLog || [];
+    if (logs.length === 0) {
         logDiv.innerHTML = '<h5>Recent Experiments</h5><div class="log-entry">No experiments yet.</div>';
         return;
     }
     
     let html = '<h5>Recent Experiments</h5>';
-    experimentLog.slice(-10).reverse().forEach(exp => {
+    logs.slice(-10).reverse().forEach(exp => {
         html += `<div class="log-entry">
             <strong>${exp.method}</strong> - ${new Date(exp.timestamp).toLocaleString()}<br>
             Params: ${JSON.stringify(exp.params)}
@@ -835,7 +858,8 @@ function updateExperimentLog() {
 
 function clearExperiments() {
     if (confirm('Clear all experiments?')) {
-        experimentLog = [];
+        window.experimentLog = [];
+        experimentLog = window.experimentLog;
         updateExperimentLog();
     }
 }

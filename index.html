@@ -975,7 +975,17 @@
         </div>
     </div>
 
-    <script src="research.js"></script>
+    <!-- research_advanced.jsのみを読み込む（メイン実装） -->
     <script src="research_advanced.js"></script>
+    <script>
+        // 読み込み確認
+        console.log('✓ research_advanced.js loaded');
+        console.log('Functions available:', {
+            switchTab: typeof switchTab !== 'undefined',
+            loadCycleGANSource: typeof loadCycleGANSource !== 'undefined',
+            convertCycleGAN: typeof convertCycleGAN !== 'undefined',
+            initAudioContext: typeof initAudioContext !== 'undefined'
+        });
+    </script>
 </body>
 </html>
