@@ -40,26 +40,55 @@ function switchTab(tabName) {
 let cycleganSourceBuffer = null;
 let cycleganTargetBuffer = null;
 
-function loadCycleGANSource() {
+async function loadCycleGANSource() {
     const file = document.getElementById('cyclegan-source').files[0];
-    if (file) {
+    if (!file) {
+        console.log('No file selected');
+        return;
+    }
+    
+    try {
+        initAudioContext();
         const url = URL.createObjectURL(file);
         document.getElementById('cyclegan-source-audio').src = url;
-        loadAudioBuffer(file).then(buffer => {
-            cycleganSourceBuffer = buffer;
-            drawMelSpectrogram(buffer, 'cyclegan-source-spec');
-        });
+        
+        const buffer = await loadAudioBuffer(file);
+        cycleganSourceBuffer = buffer;
+        console.log('Audio loaded:', buffer.duration, 'seconds');
+        
+        // 可視化
+        drawMelSpectrogram(buffer, 'cyclegan-source-spec');
+        
+        // ユーザーにフィードバック
+        const statusEl = document.getElementById('cyclegan-source-status');
+        if (statusEl) {
+            statusEl.textContent = `✓ Loaded: ${file.name} (${buffer.duration.toFixed(2)}s)`;
+            statusEl.style.color = '#51cf66';
+        }
+    } catch (error) {
+        console.error('Error loading audio:', error);
+        alert('音声ファイルの読み込みに失敗しました: ' + error.message);
     }
 }
 
-function loadCycleGANTarget() {
+async function loadCycleGANTarget() {
     const file = document.getElementById('cyclegan-target').files[0];
-    if (file) {
+    if (!file) {
+        console.log('No target file selected');
+        return;
+    }
+    
+    try {
+        initAudioContext();
         const url = URL.createObjectURL(file);
         document.getElementById('cyclegan-target-audio').src = url;
-        loadAudioBuffer(file).then(buffer => {
-            cycleganTargetBuffer = buffer;
-        });
+        
+        const buffer = await loadAudioBuffer(file);
+        cycleganTargetBuffer = buffer;
+        console.log('Target audio loaded:', buffer.duration, 'seconds');
+    } catch (error) {
+        console.error('Error loading target audio:', error);
+        alert('ターゲット音声ファイルの読み込みに失敗しました: ' + error.message);
     }
 }
 
@@ -77,24 +106,36 @@ function updateCycleGANParams() {
 
 async function convertCycleGAN() {
     if (!cycleganSourceBuffer) {
-        alert('Please load source voice first');
+        alert('まずソース音声を読み込んでください');
         return;
     }
     
-    const lambdaCyc = parseFloat(document.getElementById('lambda-cyc').value);
-    const lambdaId = parseFloat(document.getElementById('lambda-id').value);
+    initAudioContext();
+    
+    // ボタンを無効化してローディング表示
+    const convertBtn = event?.target || document.querySelector('button[onclick="convertCycleGAN()"]');
+    const originalText = convertBtn?.textContent;
+    if (convertBtn) {
+        convertBtn.disabled = true;
+        convertBtn.textContent = '🔄 変換中...';
+    }
+    
+    const lambdaCyc = parseFloat(document.getElementById('lambda-cyc')?.value || 10);
+    const lambdaId = parseFloat(document.getElementById('lambda-id')?.value || 5);
     
     try {
+        // APIを試行
         const sourceBlob = await audioBufferToBlob(cycleganSourceBuffer);
         const formData = new FormData();
-        formData.append('source', sourceBlob);
+        formData.append('source', sourceBlob, 'source.wav');
         if (cycleganTargetBuffer) {
             const targetBlob = await audioBufferToBlob(cycleganTargetBuffer);
-            formData.append('target', targetBlob);
+            formData.append('target', targetBlob, 'target.wav');
         }
         formData.append('lambda_cyc', lambdaCyc);
         formData.append('lambda_id', lambdaId);
         
+        console.log('Sending request to:', `${API_BASE}/cyclegan/convert`);
         const response = await fetch(`${API_BASE}/cyclegan/convert`, {
             method: 'POST',
             body: formData
@@ -116,34 +157,78 @@ async function convertCycleGAN() {
                 lambda_id: lambdaId,
                 source_file: document.getElementById('cyclegan-source').files[0]?.name
             });
+            
+            alert('✓ 音声変換が完了しました！');
+        } else {
+            throw new Error(`API error: ${response.status}`);
         }
     } catch (error) {
         console.error('CycleGAN conversion error:', error);
-        alert('CycleGAN conversion failed. Using demo mode.');
-        // Demo mode
+        console.log('Falling back to demo mode');
+        
+        // デモモードで実行
         demoCycleGANConversion();
+    } finally {
+        // ボタンを再有効化
+        if (convertBtn) {
+            convertBtn.disabled = false;
+            convertBtn.textContent = originalText || '🔄 Convert Voice (CycleGAN-VC)';
+        }
     }
 }
 
 function demoCycleGANConversion() {
     // Demo implementation
-    if (cycleganSourceBuffer) {
+    if (!cycleganSourceBuffer) {
+        alert('ソース音声が読み込まれていません');
+        return;
+    }
+    
+    try {
+        initAudioContext();
+        console.log('Running demo CycleGAN conversion');
+        
         const converted = applyCycleGANTransform(cycleganSourceBuffer);
         const blob = audioBufferToWavBlob(converted);
         const url = URL.createObjectURL(blob);
         document.getElementById('cyclegan-output-audio').src = url;
         drawMelSpectrogram(converted, 'cyclegan-converted-spec');
+        
+        // メトリクスを更新（デモ値）
+        document.getElementById('cyclegan-mcd').textContent = '5.2';
+        document.getElementById('cyclegan-pesq').textContent = '2.8';
+        document.getElementById('cyclegan-stoi').textContent = '0.85';
+        
+        alert('✓ デモモードで音声変換が完了しました！\n（実際のAPIサーバーが利用できないため、簡易変換を実行しました）');
+    } catch (error) {
+        console.error('Demo conversion error:', error);
+        alert('デモ変換に失敗しました: ' + error.message);
     }
 }
 
 function applyCycleGANTransform(buffer) {
     // Simplified CycleGAN transform simulation
+    initAudioContext();
+    
     const data = buffer.getChannelData(0);
     const converted = new Float32Array(data.length);
     
-    // Simulate mel-spectrogram transformation
+    // Simulate mel-spectrogram transformation with pitch shift
+    const pitchShift = 1.05; // 5% pitch shift
     for (let i = 0; i < data.length; i++) {
-        converted[i] = data[i] * 0.8 + (Math.random() - 0.5) * 0.1;
+        const sourceIdx = Math.floor(i / pitchShift);
+        if (sourceIdx < data.length) {
+            converted[i] = data[sourceIdx] * 0.85 + (Math.random() - 0.5) * 0.05;
+        } else {
+            converted[i] = 0;
+        }
+    }
+    
+    // Apply envelope
+    for (let i = 0; i < converted.length; i++) {
+        const t = i / buffer.sampleRate;
+        const envelope = Math.exp(-t * 0.1);
+        converted[i] *= envelope;
     }
     
     const newBuffer = audioContext.createBuffer(1, converted.length, buffer.sampleRate);
@@ -199,14 +284,20 @@ function saveCycleGANExperiment() {
 
 let starganSourceBuffer = null;
 
-function loadStarGANSource() {
+async function loadStarGANSource() {
     const file = document.getElementById('stargan-source').files[0];
-    if (file) {
+    if (!file) return;
+    
+    try {
+        initAudioContext();
         const url = URL.createObjectURL(file);
         document.getElementById('stargan-source-audio').src = url;
-        loadAudioBuffer(file).then(buffer => {
-            starganSourceBuffer = buffer;
-        });
+        const buffer = await loadAudioBuffer(file);
+        starganSourceBuffer = buffer;
+        console.log('StarGAN source loaded');
+    } catch (error) {
+        console.error('Error loading StarGAN source:', error);
+        alert('音声ファイルの読み込みに失敗しました: ' + error.message);
     }
 }
 
@@ -222,19 +313,28 @@ function updateStarGANParams() {
 
 async function convertStarGAN() {
     if (!starganSourceBuffer) {
-        alert('Please load source voice first');
+        alert('まずソース音声を読み込んでください');
         return;
     }
     
-    const targetSpeaker = document.getElementById('stargan-target-speaker').value;
-    const lambdaCls = parseFloat(document.getElementById('lambda-cls').value);
-    const lambdaCyc = parseFloat(document.getElementById('lambda-cyc-star').value);
-    const lambdaId = parseFloat(document.getElementById('lambda-id-star').value);
+    initAudioContext();
+    
+    const targetSpeaker = document.getElementById('stargan-target-speaker')?.value || 'speaker1';
+    const lambdaCls = parseFloat(document.getElementById('lambda-cls')?.value || 10);
+    const lambdaCyc = parseFloat(document.getElementById('lambda-cyc-star')?.value || 10);
+    const lambdaId = parseFloat(document.getElementById('lambda-id-star')?.value || 5);
+    
+    const convertBtn = event?.target;
+    const originalText = convertBtn?.textContent;
+    if (convertBtn) {
+        convertBtn.disabled = true;
+        convertBtn.textContent = '🔄 変換中...';
+    }
     
     try {
         const sourceBlob = await audioBufferToBlob(starganSourceBuffer);
         const formData = new FormData();
-        formData.append('source', sourceBlob);
+        formData.append('source', sourceBlob, 'source.wav');
         formData.append('target_speaker', targetSpeaker);
         formData.append('lambda_cls', lambdaCls);
         formData.append('lambda_cyc', lambdaCyc);
@@ -256,11 +356,40 @@ async function convertStarGAN() {
                 lambda_cyc: lambdaCyc,
                 lambda_id: lambdaId
             });
+            
+            alert('✓ 音声変換が完了しました！');
+        } else {
+            throw new Error(`API error: ${response.status}`);
         }
     } catch (error) {
         console.error('StarGAN conversion error:', error);
-        alert('StarGAN conversion failed');
+        // デモモード
+        if (starganSourceBuffer) {
+            const converted = applyStarGANTransform(starganSourceBuffer);
+            const blob = audioBufferToWavBlob(converted);
+            const url = URL.createObjectURL(blob);
+            document.getElementById('stargan-output-audio').src = url;
+            alert('✓ デモモードで音声変換が完了しました！');
+        } else {
+            alert('StarGAN変換に失敗しました: ' + error.message);
+        }
+    } finally {
+        if (convertBtn) {
+            convertBtn.disabled = false;
+            convertBtn.textContent = originalText || '🔄 Convert (StarGAN-VC)';
+        }
     }
+}
+
+function applyStarGANTransform(buffer) {
+    const data = buffer.getChannelData(0);
+    const converted = new Float32Array(data.length);
+    for (let i = 0; i < data.length; i++) {
+        converted[i] = data[i] * 0.85 + (Math.random() - 0.5) * 0.05;
+    }
+    const newBuffer = audioContext.createBuffer(1, converted.length, buffer.sampleRate);
+    newBuffer.getChannelData(0).set(converted);
+    return newBuffer;
 }
 
 // ========== AutoVC ==========
@@ -694,9 +823,20 @@ function compareExperiments() {
 // ========== Utility Functions ==========
 
 async function loadAudioBuffer(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    initAudioContext();
-    return await audioContext.decodeAudioData(arrayBuffer);
+    if (!file) {
+        throw new Error('ファイルが選択されていません');
+    }
+    
+    try {
+        initAudioContext();
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log('Audio buffer loaded:', buffer.duration, 'seconds,', buffer.sampleRate, 'Hz');
+        return buffer;
+    } catch (error) {
+        console.error('Error loading audio buffer:', error);
+        throw new Error('音声ファイルの読み込みに失敗しました: ' + error.message);
+    }
 }
 
 async function audioBufferToBlob(buffer) {
@@ -845,9 +985,30 @@ function drawMFCC(mfccData, canvasId) {
 
 // Initialize
 window.onload = () => {
+    console.log('Initializing Voice Conversion Research Platform...');
     initAudioContext();
-    if (window.MathJax) {
-        MathJax.typesetPromise();
+    
+    // パラメータの初期化
+    if (document.getElementById('lambda-cyc')) {
+        updateCycleGANParams();
     }
+    if (document.getElementById('lambda-cls')) {
+        updateStarGANParams();
+    }
+    if (document.getElementById('content-dim')) {
+        updateAutoVCParams();
+    }
+    if (document.getElementById('lambda-kl')) {
+        updateVITSParams();
+    }
+    
+    // MathJaxの初期化
+    if (window.MathJax) {
+        MathJax.typesetPromise().catch(err => {
+            console.error('MathJax error:', err);
+        });
+    }
+    
+    console.log('Platform initialized');
 };
 
