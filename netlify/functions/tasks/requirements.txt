@@ -1,0 +1,2 @@
+# Netlify Functions用の依存パッケージ（必要に応じて）
+

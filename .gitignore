@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# データファイル（ローカル開発用）
+data/
+*.json
+!package.json
+!package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+.DS_Store?
+
+# Netlify
+.netlify/
+.netlify/
+
+# ログファイル
+*.log
+logs/
+
+# 一時ファイル
+*.tmp
+*.temp
+.cache/
+
+# 環境変数ファイル
+.env
+.env.local
+.env.*.local
+
+# テストカバレッジ
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 音声ファイル（サンプル以外）
+*.wav
+*.mp3
+*.ogg
+!sample_*.wav
+

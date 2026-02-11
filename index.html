@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク管理 & メモアプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        textarea {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            border-left-color: #28a745;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+        }
+
+        .task-text {
+            flex: 1;
+            color: #333;
+            font-size: 1em;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-actions button {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+
+        .memo-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .memo-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #764ba2;
+            position: relative;
+        }
+
+        .memo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .memo-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .memo-date {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .memo-content {
+            color: #555;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+        }
+
+        .memo-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state::before {
+            content: "📝";
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 タスク管理 & メモアプリ</h1>
+            <p>効率的にタスクを管理し、重要なメモを保存しましょう</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="total-tasks">0</div>
+                <div class="stat-label">総タスク数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="completed-tasks">0</div>
+                <div class="stat-label">完了済み</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="pending-tasks">0</div>
+                <div class="stat-label">未完了</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-memos">0</div>
+                <div class="stat-label">メモ数</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- タスク管理パネル -->
+            <div class="panel">
+                <h2>📝 タスク管理</h2>
+                <div class="input-group">
+                    <input type="text" id="task-input" placeholder="新しいタスクを入力...">
+                    <button onclick="addTask()">追加</button>
+                </div>
+                <ul class="task-list" id="task-list">
+                    <li class="empty-state">タスクがありません</li>
+                </ul>
+            </div>
+
+            <!-- メモパネル -->
+            <div class="panel">
+                <h2>📄 メモ</h2>
+                <div class="input-group" style="flex-direction: column; gap: 10px;">
+                    <input type="text" id="memo-title" placeholder="メモのタイトル...">
+                    <textarea id="memo-content" placeholder="メモの内容を入力..."></textarea>
+                    <button onclick="addMemo()">メモを保存</button>
+                </div>
+                <div class="memo-list" id="memo-list">
+                    <div class="empty-state">メモがありません</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Netlify FunctionsまたはローカルAPIのベースURLを自動検出
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000/api'
+            : '/.netlify/functions';
+
+        // タスク管理機能
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_BASE}/tasks`);
+                const tasks = await response.json();
+                displayTasks(tasks);
+                updateStats();
+            } catch (error) {
+                console.error('タスクの読み込みに失敗しました:', error);
+            }
+        }
+
+        async function addTask() {
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('タスクの追加に失敗しました:', error);
+                alert('タスクの追加に失敗しました');
+            }
+        }
+
+        async function toggleTask(id) {
+            try {
+                const response = await fetch(`${API_BASE}/tasks/${id}/toggle`, {
+                    method: 'PUT'
+                });
+                
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('タスクの更新に失敗しました:', error);
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('このタスクを削除しますか？')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('タスクの削除に失敗しました:', error);
+            }
+        }
+
+        function displayTasks(tasks) {
+            const list = document.getElementById('task-list');
+            
+            if (tasks.length === 0) {
+                list.innerHTML = '<li class="empty-state">タスクがありません</li>';
+                return;
+            }
+
+            list.innerHTML = tasks.map(task => `
+                <li class="task-item ${task.completed ? 'completed' : ''}">
+                    <span class="task-text">${escapeHtml(task.text)}</span>
+                    <div class="task-actions">
+                        <button class="btn-success" onclick="toggleTask(${task.id})">
+                            ${task.completed ? '↩ 未完了' : '✓ 完了'}
+                        </button>
+                        <button class="btn-danger" onclick="deleteTask(${task.id})">削除</button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // メモ機能
+        async function loadMemos() {
+            try {
+                const response = await fetch(`${API_BASE}/memos`);
+                const memos = await response.json();
+                displayMemos(memos);
+                updateStats();
+            } catch (error) {
+                console.error('メモの読み込みに失敗しました:', error);
+            }
+        }
+
+        async function addMemo() {
+            const titleInput = document.getElementById('memo-title');
+            const contentInput = document.getElementById('memo-content');
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+
+            if (!title || !content) {
+                alert('タイトルと内容を入力してください');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/memos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content })
+                });
+                
+                if (response.ok) {
+                    titleInput.value = '';
+                    contentInput.value = '';
+                    loadMemos();
+                }
+            } catch (error) {
+                console.error('メモの追加に失敗しました:', error);
+                alert('メモの追加に失敗しました');
+            }
+        }
+
+        async function deleteMemo(id) {
+            if (!confirm('このメモを削除しますか？')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/memos/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadMemos();
+                }
+            } catch (error) {
+                console.error('メモの削除に失敗しました:', error);
+            }
+        }
+
+        function displayMemos(memos) {
+            const list = document.getElementById('memo-list');
+            
+            if (memos.length === 0) {
+                list.innerHTML = '<div class="empty-state">メモがありません</div>';
+                return;
+            }
+
+            list.innerHTML = memos.map(memo => `
+                <div class="memo-item">
+                    <div class="memo-header">
+                        <div class="memo-title">${escapeHtml(memo.title)}</div>
+                        <div class="memo-date">${formatDate(memo.created_at)}</div>
+                    </div>
+                    <div class="memo-content">${escapeHtml(memo.content)}</div>
+                    <div class="memo-actions">
+                        <button class="btn-danger" onclick="deleteMemo(${memo.id})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 統計更新
+        async function updateStats() {
+            try {
+                const [tasksRes, memosRes] = await Promise.all([
+                    fetch(`${API_BASE}/tasks`),
+                    fetch(`${API_BASE}/memos`)
+                ]);
+                
+                const tasks = await tasksRes.json();
+                const memos = await memosRes.json();
+                
+                const completed = tasks.filter(t => t.completed).length;
+                const pending = tasks.length - completed;
+                
+                document.getElementById('total-tasks').textContent = tasks.length;
+                document.getElementById('completed-tasks').textContent = completed;
+                document.getElementById('pending-tasks').textContent = pending;
+                document.getElementById('total-memos').textContent = memos.length;
+            } catch (error) {
+                console.error('統計の更新に失敗しました:', error);
+            }
+        }
+
+        // ユーティリティ関数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Enterキーでタスク追加
+        document.getElementById('task-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // 初期化
+        window.onload = () => {
+            loadTasks();
+            loadMemos();
+        };
+    </script>
+</body>
+</html>
+

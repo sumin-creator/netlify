@@ -1,0 +1,42 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+
+# タスク管理API
+[[redirects]]
+  from = "/api/tasks"
+  to = "/.netlify/functions/tasks"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/tasks/*"
+  to = "/.netlify/functions/tasks"
+  status = 200
+  force = true
+
+# メモAPI
+[[redirects]]
+  from = "/api/memos"
+  to = "/.netlify/functions/memos"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/memos/*"
+  to = "/.netlify/functions/memos"
+  status = 200
+  force = true
+
+# 音声合成研究API（Netlify Functions用）
+# 注意: 実際の音声処理はサーバー側で実行する必要があります
+# 本番環境では、別のサーバー（Heroku、AWS Lambda等）を使用することを推奨します
+
+# SPA用のリダイレクト（すべてのルートをindex.htmlに）
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
