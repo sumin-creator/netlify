@@ -1,15 +1,10 @@
 # Voice Conversion Research Platform
 
-音声変換研究プラットフォーム - タスク管理 & メモアプリ + 高度な音声合成研究ツール
+音声変換研究プラットフォーム - 最新の音声変換研究手法を実装・実験
 
 ## 📋 機能
 
-### 1. タスク管理 & メモアプリ
-- ✅ タスクの追加、完了/未完了の切り替え、削除
-- 📝 タイトルと内容を持つメモの作成と削除
-- 📊 統計表示（タスク数、完了数、未完了数、メモ数）
-
-### 2. 高度な音声合成研究プラットフォーム
+### 高度な音声変換研究プラットフォーム
 - 🔬 **CycleGAN-VC**: Non-parallel voice conversion (EUSIPCO 2018, ICASSP 2019)
 - 🌟 **StarGAN-VC**: Many-to-many voice conversion (SLT 2018, ICASSP 2019)
 - 🎯 **AutoVC**: Zero-shot voice style transfer (NeurIPS 2019)
@@ -29,9 +24,8 @@ cd YOUR_REPO_NAME/netlify
 # 依存パッケージのインストール
 pip install -r requirements.txt
 
-# バックエンドAPIサーバーの起動
-python app.py  # タスク管理用
-python research_api.py  # 音声合成研究用
+# バックエンドAPIサーバーの起動（音声合成研究用）
+python research_api.py
 
 # フロントエンドの表示（別ターミナル）
 python -m http.server 8000
@@ -53,18 +47,13 @@ python -m http.server 8000
 
 ```
 netlify/
-├── index.html              # タスク管理 & メモアプリ
-├── research.html           # 音声合成研究プラットフォーム
-├── app.py                  # タスク管理API（ローカル開発用）
+├── index.html              # 音声変換研究プラットフォーム（メインページ）
+├── research.html           # 音声合成研究プラットフォーム（詳細版）
 ├── research_api.py         # 音声合成研究API（ローカル開発用）
 ├── research.js             # 音声合成研究のJavaScript
 ├── research_advanced.js    # 高度な音声変換のJavaScript
 ├── netlify.toml           # Netlify設定ファイル
 ├── requirements.txt       # Python依存パッケージ
-├── netlify/
-│   └── functions/         # Netlify Functions
-│       ├── tasks/         # タスク管理API
-│       └── memos/         # メモ管理API
 ├── README.md              # このファイル
 ├── DEPLOY.md              # デプロイ手順
 ├── RESEARCH_README.md     # 音声合成研究の詳細
@@ -94,8 +83,8 @@ netlify/
 
 デプロイ後、以下のURLでアクセス可能：
 
-- タスク管理 & メモ: `https://your-site.netlify.app/`
-- 音声合成研究: `https://your-site.netlify.app/research.html`
+- 音声変換研究プラットフォーム: `https://your-site.netlify.app/`
+- 詳細版: `https://your-site.netlify.app/research.html`
 
 ## ⚠️ 注意事項
 

@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>タスク管理 & メモアプリ</title>
+    <title>Voice Conversion Research Platform - 音声変換研究プラットフォーム</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            }
+        };
+    </script>
     <style>
         * {
             margin: 0;
@@ -12,14 +24,16 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2d3561 100%);
+            color: #e0e0e0;
             min-height: 100vh;
             padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1800px;
             margin: 0 auto;
         }
 
@@ -27,509 +41,940 @@
             text-align: center;
             color: white;
             margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
 
         header h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 20px rgba(100,150,255,0.5);
+            font-weight: 700;
+            letter-spacing: 2px;
         }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        header .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
+        .tab {
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-family: 'Georgia', serif;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #fff;
+            box-shadow: 0 5px 20px rgba(102,126,234,0.5);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: 800px;
+            color: #1a1a1a;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
         }
 
         .panel {
-            background: white;
-            border-radius: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 2px solid #dee2e6;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .panel h2 {
-            color: #667eea;
+        .panel h3 {
+            color: #1e3c72;
             margin-bottom: 20px;
             font-size: 1.5em;
             border-bottom: 3px solid #667eea;
             padding-bottom: 10px;
+            font-weight: 700;
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+        .math-section {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+            font-family: 'Courier New', monospace;
         }
 
-        input[type="text"],
-        textarea {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
+        .math-section h4 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .formula-display {
+            background: #0a0a0a;
+            padding: 20px;
             border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid #333;
         }
 
-        input[type="text"]:focus,
-        textarea:focus {
+        canvas {
+            width: 100%;
+            height: 350px;
+            background: #000;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #667eea;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1.5fr 4fr 1fr;
+            gap: 15px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        label {
+            color: #1e3c72;
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border-radius: 5px;
             outline: none;
-            border-color: #667eea;
         }
 
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-            font-family: inherit;
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255,107,107,0.6);
+        }
+
+        .value-display {
+            color: #1e3c72;
+            font-weight: bold;
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
         }
 
         button {
-            padding: 12px 24px;
+            padding: 15px 30px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 1.1em;
+            font-weight: 700;
+            transition: all 0.3s;
+            margin: 8px;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
         }
 
-        .task-list {
-            list-style: none;
+        .btn-warning {
+            background: linear-gradient(135deg, #ffd43b 0%, #fcc419 100%);
+            color: #1a1a1a;
         }
 
-        .task-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 10px;
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s;
-        }
-
-        .task-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-
-        .task-item.completed {
-            opacity: 0.6;
-            border-left-color: #28a745;
-        }
-
-        .task-item.completed .task-text {
-            text-decoration: line-through;
-        }
-
-        .task-text {
-            flex: 1;
-            color: #333;
             font-size: 1em;
+            margin: 10px 0;
+            font-family: inherit;
         }
 
-        .task-actions {
-            display: flex;
-            gap: 8px;
+        textarea {
+            min-height: 120px;
+            resize: vertical;
         }
 
-        .task-actions button {
-            padding: 6px 12px;
-            font-size: 0.85em;
+        .paper-reference {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(255,193,7,0.2);
         }
 
-        .memo-list {
-            display: grid;
-            gap: 15px;
-        }
-
-        .memo-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #764ba2;
-            position: relative;
-        }
-
-        .memo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .paper-reference h4 {
+            color: #856404;
             margin-bottom: 10px;
+            font-size: 1.4em;
+            font-weight: 700;
         }
 
-        .memo-title {
-            font-weight: 600;
-            color: #333;
+        .paper-reference p {
+            color: #856404;
+            font-size: 1em;
+            line-height: 1.8;
+            margin: 8px 0;
+        }
+
+        .paper-reference .citation {
+            font-style: italic;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ffc107;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+            margin: 20px 0;
+        }
+
+        .info-box strong {
+            color: #1565c0;
             font-size: 1.1em;
         }
 
-        .memo-date {
-            color: #666;
-            font-size: 0.85em;
+        .comparison-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
         }
 
-        .memo-content {
-            color: #555;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin-bottom: 10px;
-        }
-
-        .memo-actions {
+        .audio-controls {
             display: flex;
-            gap: 8px;
-            justify-content: flex-end;
+            gap: 15px;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
         }
 
-        .stats {
+        audio {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .experiment-log {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .experiment-log h5 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .metric-display {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+            margin: 20px 0;
         }
 
-        .stat-item {
-            text-align: center;
-            padding: 15px;
+        .metric-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            padding: 20px;
             border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
         }
 
-        .stat-value {
-            font-size: 2em;
+        .metric-value {
+            font-size: 2.5em;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin: 10px 0;
         }
 
-        .stat-label {
-            font-size: 0.9em;
+        .metric-label {
+            font-size: 1em;
             opacity: 0.9;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
 
-        .empty-state::before {
-            content: "📝";
-            font-size: 3em;
-            display: block;
-            margin-bottom: 10px;
+        .status-indicator.active {
+            background: #51cf66;
+            box-shadow: 0 0 10px #51cf66;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.inactive {
+            background: #999;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .advanced-controls {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .advanced-controls h4 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .parameter-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📋 タスク管理 & メモアプリ</h1>
-            <p>効率的にタスクを管理し、重要なメモを保存しましょう</p>
+            <h1>🔬 Voice Conversion Research Platform</h1>
+            <div class="subtitle">音声変換研究プラットフォーム</div>
+            <p style="margin-top: 15px; font-size: 1em; opacity: 0.8; max-width: 800px; margin-left: auto; margin-right: auto;">
+                最新の音声変換研究手法を実装・実験できる研究プラットフォーム<br>
+                ICASSP / Interspeech / ICML Level Research Implementation
+            </p>
         </header>
 
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="total-tasks">0</div>
-                <div class="stat-label">総タスク数</div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('cyclegan')">CycleGAN-VC</button>
+            <button class="tab" onclick="switchTab('stargan')">StarGAN-VC</button>
+            <button class="tab" onclick="switchTab('autovc')">AutoVC</button>
+            <button class="tab" onclick="switchTab('vits')">VITS</button>
+            <button class="tab" onclick="switchTab('wavenet')">WaveNet</button>
+            <button class="tab" onclick="switchTab('analysis')">Spectral Analysis</button>
+            <button class="tab" onclick="switchTab('experiments')">Experiments</button>
+        </div>
+
+        <!-- CycleGAN-VC Tab -->
+        <div id="cyclegan" class="tab-content active">
+            <div class="paper-reference">
+                <h4>📚 CycleGAN-VC: Non-parallel Voice Conversion</h4>
+                <p><strong>Authors:</strong> Takuhiro Kaneko, Hirokazu Kameoka, Kou Tanaka, Nobukatsu Hojo</p>
+                <p><strong>Conference:</strong> EUSIPCO 2018, ICASSP 2019</p>
+                <p class="citation">"CycleGAN-VC: Non-parallel voice conversion using cycle-consistent adversarial networks." 
+                <em>2018 26th European Signal Processing Conference (EUSIPCO)</em>. IEEE, 2018.</p>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="completed-tasks">0</div>
-                <div class="stat-label">完了済み</div>
+
+            <div class="math-section">
+                <h4>Mathematical Formulation</h4>
+                <div class="formula-display">
+                    <p><strong>Generator Loss:</strong></p>
+                    $$L_{G}(G_{X \to Y}, D_Y, X, Y) = L_{adv}(G_{X \to Y}, D_Y, X, Y) + \lambda_{cyc} L_{cyc}(G_{X \to Y}, G_{Y \to X})$$
+                    
+                    <p><strong>Adversarial Loss:</strong></p>
+                    $$L_{adv}(G, D, X, Y) = \mathbb{E}_{y \sim p_{data}(y)}[\log D_Y(y)] + \mathbb{E}_{x \sim p_{data}(x)}[\log(1 - D_Y(G(x)))]$$
+                    
+                    <p><strong>Cycle Consistency Loss:</strong></p>
+                    $$L_{cyc}(G_{X \to Y}, G_{Y \to X}) = \mathbb{E}_{x \sim p_{data}(x)}[\|G_{Y \to X}(G_{X \to Y}(x)) - x\|_1] + \mathbb{E}_{y \sim p_{data}(y)}[\|G_{X \to Y}(G_{Y \to X}(y)) - y\|_1]$$
+                    
+                    <p><strong>Identity Mapping Loss:</strong></p>
+                    $$L_{id}(G_{X \to Y}, G_{Y \to X}) = \mathbb{E}_{y \sim p_{data}(y)}[\|G_{X \to Y}(y) - y\|_1] + \mathbb{E}_{x \sim p_{data}(x)}[\|G_{Y \to X}(x) - x\|_1]$$
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="pending-tasks">0</div>
-                <div class="stat-label">未完了</div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>🎤 Source Voice Input</h3>
+                    <input type="file" id="cyclegan-source" accept="audio/*" onchange="loadCycleGANSource()">
+                    <audio id="cyclegan-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                    <div class="info-box">
+                        <strong>Input:</strong> Source speaker's voice sample (mel-spectrogram extracted)
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🎭 Target Voice Reference</h3>
+                    <input type="file" id="cyclegan-target" accept="audio/*" onchange="loadCycleGANTarget()">
+                    <audio id="cyclegan-target-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                    <div class="info-box">
+                        <strong>Reference:</strong> Target speaker's voice sample (for style extraction)
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="total-memos">0</div>
-                <div class="stat-label">メモ数</div>
+
+            <div class="advanced-controls">
+                <h4>🔧 Advanced Parameters</h4>
+                <div class="parameter-group">
+                    <div class="controls">
+                        <label>Cycle Consistency Weight (λ_cyc):</label>
+                        <input type="range" id="lambda-cyc" min="1" max="20" value="10" step="0.5" oninput="updateCycleGANParams()">
+                        <span class="value-display" id="lambda-cyc-value">10.0</span>
+                    </div>
+                    <div class="controls">
+                        <label>Identity Loss Weight (λ_id):</label>
+                        <input type="range" id="lambda-id" min="0" max="10" value="5" step="0.5" oninput="updateCycleGANParams()">
+                        <span class="value-display" id="lambda-id-value">5.0</span>
+                    </div>
+                    <div class="controls">
+                        <label>Learning Rate:</label>
+                        <input type="range" id="lr-cyclegan" min="0.0001" max="0.01" value="0.0002" step="0.0001" oninput="updateCycleGANParams()">
+                        <span class="value-display" id="lr-cyclegan-value">0.0002</span>
+                    </div>
+                    <div class="controls">
+                        <label>Generator Iterations:</label>
+                        <input type="range" id="gen-iters" min="1" max="5" value="1" step="1" oninput="updateCycleGANParams()">
+                        <span class="value-display" id="gen-iters-value">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button onclick="convertCycleGAN()" class="btn-success">🔄 Convert Voice (CycleGAN-VC)</button>
+                <button onclick="analyzeCycleGAN()" class="btn-warning">📊 Analyze Conversion</button>
+                <button onclick="saveCycleGANExperiment()" class="btn-success">💾 Save Experiment</button>
+            </div>
+
+            <div class="comparison-panel">
+                <div class="panel">
+                    <h3>📈 Source Mel-Spectrogram</h3>
+                    <canvas id="cyclegan-source-spec"></canvas>
+                </div>
+                <div class="panel">
+                    <h3>📈 Converted Mel-Spectrogram</h3>
+                    <canvas id="cyclegan-converted-spec"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>🎵 Converted Voice Output</h3>
+                <audio id="cyclegan-output-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                <div class="metric-display">
+                    <div class="metric-card">
+                        <div class="metric-label">MCD (dB)</div>
+                        <div class="metric-value" id="cyclegan-mcd">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">PESQ</div>
+                        <div class="metric-value" id="cyclegan-pesq">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">STOI</div>
+                        <div class="metric-value" id="cyclegan-stoi">-</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="main-content">
-            <!-- タスク管理パネル -->
-            <div class="panel">
-                <h2>📝 タスク管理</h2>
-                <div class="input-group">
-                    <input type="text" id="task-input" placeholder="新しいタスクを入力...">
-                    <button onclick="addTask()">追加</button>
-                </div>
-                <ul class="task-list" id="task-list">
-                    <li class="empty-state">タスクがありません</li>
-                </ul>
+        <!-- StarGAN-VC Tab -->
+        <div id="stargan" class="tab-content">
+            <div class="paper-reference">
+                <h4>📚 StarGAN-VC: Non-parallel Many-to-many Voice Conversion</h4>
+                <p><strong>Authors:</strong> Hirokazu Kameoka, Takuhiro Kaneko, Kou Tanaka, Nobukatsu Hojo</p>
+                <p><strong>Conference:</strong> SLT 2018, ICASSP 2019</p>
+                <p class="citation">"StarGAN-VC: Non-parallel many-to-many voice conversion using star generative adversarial networks." 
+                <em>2018 IEEE Spoken Language Technology Workshop (SLT)</em>. IEEE, 2018.</p>
             </div>
 
-            <!-- メモパネル -->
+            <div class="math-section">
+                <h4>Mathematical Formulation</h4>
+                <div class="formula-display">
+                    <p><strong>Generator Loss:</strong></p>
+                    $$L_G = L_{adv} + \lambda_{cls} L_{cls}^r + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$$
+                    
+                    <p><strong>Domain Classification Loss:</strong></p>
+                    $$L_{cls}^r = \mathbb{E}_{x,c}[-log D_{cls}(c|G(x,c))]$$
+                    
+                    <p><strong>Cycle Consistency Loss:</strong></p>
+                    $$L_{cyc} = \mathbb{E}_{x,c,c'}[\|G(G(x,c),c') - x\|_1]$$
+                    
+                    <p><strong>Identity Mapping Loss:</strong></p>
+                    $$L_{id} = \mathbb{E}_{x,c}[\|G(x,c) - x\|_1]$$
+                    
+                    <p><strong>Discriminator Loss:</strong></p>
+                    $$L_D = -L_{adv} + \lambda_{cls} L_{cls}^f$$
+                    
+                    <p><strong>Domain Classification Loss (Discriminator):</strong></p>
+                    $$L_{cls}^f = \mathbb{E}_{x,c}[-log D_{cls}(c|x)]$$
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>🎤 Source Voice</h3>
+                    <input type="file" id="stargan-source" accept="audio/*" onchange="loadStarGANSource()">
+                    <audio id="stargan-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                </div>
+                <div class="panel">
+                    <h3>🎯 Target Speaker</h3>
+                    <select id="stargan-target-speaker" onchange="updateStarGANParams()">
+                        <option value="speaker1">Speaker 1</option>
+                        <option value="speaker2">Speaker 2</option>
+                        <option value="speaker3">Speaker 3</option>
+                        <option value="speaker4">Speaker 4</option>
+                    </select>
+                    <div class="info-box">
+                        <strong>Many-to-Many:</strong> Single generator for multiple speaker conversions
+                    </div>
+                </div>
+            </div>
+
+            <div class="advanced-controls">
+                <h4>🔧 StarGAN-VC Parameters</h4>
+                <div class="parameter-group">
+                    <div class="controls">
+                        <label>Classification Weight (λ_cls):</label>
+                        <input type="range" id="lambda-cls" min="1" max="20" value="10" step="0.5" oninput="updateStarGANParams()">
+                        <span class="value-display" id="lambda-cls-value">10.0</span>
+                    </div>
+                    <div class="controls">
+                        <label>Cycle Weight (λ_cyc):</label>
+                        <input type="range" id="lambda-cyc-star" min="1" max="20" value="10" step="0.5" oninput="updateStarGANParams()">
+                        <span class="value-display" id="lambda-cyc-star-value">10.0</span>
+                    </div>
+                    <div class="controls">
+                        <label>Identity Weight (λ_id):</label>
+                        <input type="range" id="lambda-id-star" min="0" max="10" value="5" step="0.5" oninput="updateStarGANParams()">
+                        <span class="value-display" id="lambda-id-star-value">5.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button onclick="convertStarGAN()" class="btn-success">🔄 Convert (StarGAN-VC)</button>
+                <button onclick="compareStarGAN()" class="btn-warning">📊 Compare Speakers</button>
+            </div>
+
             <div class="panel">
-                <h2>📄 メモ</h2>
-                <div class="input-group" style="flex-direction: column; gap: 10px;">
-                    <input type="text" id="memo-title" placeholder="メモのタイトル...">
-                    <textarea id="memo-content" placeholder="メモの内容を入力..."></textarea>
-                    <button onclick="addMemo()">メモを保存</button>
+                <h3>🎵 Converted Voice</h3>
+                <audio id="stargan-output-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+            </div>
+        </div>
+
+        <!-- AutoVC Tab -->
+        <div id="autovc" class="tab-content">
+            <div class="paper-reference">
+                <h4>📚 AutoVC: Zero-Shot Voice Style Transfer</h4>
+                <p><strong>Authors:</strong> Kaizhi Qian, Yang Zhang, Shiyu Chang, Mark Hasegawa-Johnson</p>
+                <p><strong>Conference:</strong> NeurIPS 2019</p>
+                <p class="citation">"AutoVC: Zero-shot voice style transfer with only autoencoder loss." 
+                <em>International Conference on Machine Learning</em>. PMLR, 2019.</p>
+            </div>
+
+            <div class="math-section">
+                <h4>Mathematical Formulation</h4>
+                <div class="formula-display">
+                    <p><strong>Content Encoder:</strong></p>
+                    $$c = E_c(x)$$
+                    
+                    <p><strong>Speaker Encoder:</strong></p>
+                    $$s = E_s(x)$$
+                    
+                    <p><strong>Decoder:</strong></p>
+                    $$\hat{x} = D(c, s)$$
+                    
+                    <p><strong>Reconstruction Loss:</strong></p>
+                    $$L_{recon} = \mathbb{E}_{x \sim p(x)}[\|D(E_c(x), E_s(x)) - x\|_1]$$
+                    
+                    <p><strong>Content Preservation:</strong></p>
+                    $$L_{content} = \mathbb{E}_{x_1,x_2 \sim p(x)}[\|E_c(x_1) - E_c(x_2)\|_2] \text{ if } x_1, x_2 \text{ have same content}$$
+                    
+                    <p><strong>Speaker Disentanglement:</strong></p>
+                    $$L_{disentangle} = \mathbb{E}_{x_1,x_2 \sim p(x)}[\|E_s(x_1) - E_s(x_2)\|_2] \text{ if } x_1, x_2 \text{ have same speaker}$$
+                    
+                    <p><strong>Zero-Shot Conversion:</strong></p>
+                    $$\hat{x}_{conv} = D(E_c(x_{source}), E_s(x_{target}))$$
                 </div>
-                <div class="memo-list" id="memo-list">
-                    <div class="empty-state">メモがありません</div>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>🎤 Source Voice</h3>
+                    <input type="file" id="autovc-source" accept="audio/*" onchange="loadAutoVCSource()">
+                    <audio id="autovc-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                 </div>
+                <div class="panel">
+                    <h3>🎯 Target Voice (Reference)</h3>
+                    <input type="file" id="autovc-target" accept="audio/*" onchange="loadAutoVCTarget()">
+                    <audio id="autovc-target-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                    <div class="info-box">
+                        <strong>Zero-Shot:</strong> No training data required for target speaker
+                    </div>
+                </div>
+            </div>
+
+            <div class="advanced-controls">
+                <h4>🔧 AutoVC Parameters</h4>
+                <div class="parameter-group">
+                    <div class="controls">
+                        <label>Content Dimension:</label>
+                        <input type="range" id="content-dim" min="16" max="256" value="128" step="16" oninput="updateAutoVCParams()">
+                        <span class="value-display" id="content-dim-value">128</span>
+                    </div>
+                    <div class="controls">
+                        <label>Speaker Embedding Dim:</label>
+                        <input type="range" id="speaker-dim" min="16" max="256" value="64" step="16" oninput="updateAutoVCParams()">
+                        <span class="value-display" id="speaker-dim-value">64</span>
+                    </div>
+                    <div class="controls">
+                        <label>Content Weight:</label>
+                        <input type="range" id="content-weight" min="0.1" max="2.0" value="1.0" step="0.1" oninput="updateAutoVCParams()">
+                        <span class="value-display" id="content-weight-value">1.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button onclick="convertAutoVC()" class="btn-success">🔄 Zero-Shot Convert</button>
+                <button onclick="analyzeDisentanglement()" class="btn-warning">📊 Analyze Disentanglement</button>
+            </div>
+
+            <div class="panel">
+                <h3>🎵 Converted Voice</h3>
+                <audio id="autovc-output-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                <canvas id="autovc-latent-space" style="height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- VITS Tab -->
+        <div id="vits" class="tab-content">
+            <div class="paper-reference">
+                <h4>📚 VITS: Conditional Variational Autoencoder with Adversarial Learning</h4>
+                <p><strong>Authors:</strong> Jaehyeon Kim, Jungil Kong, Juhee Son</p>
+                <p><strong>Conference:</strong> ICML 2021</p>
+                <p class="citation">"VITS: Conditional variational autoencoder with adversarial learning for end-to-end text-to-speech." 
+                <em>International Conference on Machine Learning</em>. PMLR, 2021.</p>
+            </div>
+
+            <div class="math-section">
+                <h4>Mathematical Formulation</h4>
+                <div class="formula-display">
+                    <p><strong>Variational Inference:</strong></p>
+                    $$p(z|x) = \mathcal{N}(\mu_\theta(x), \sigma_\theta^2(x))$$
+                    
+                    <p><strong>KL Divergence:</strong></p>
+                    $$L_{kl} = KL(q_\phi(z|x) \| p(z)) = \mathbb{E}_{q_\phi(z|x)}[\log q_\phi(z|x) - \log p(z)]$$
+                    
+                    <p><strong>Reconstruction Loss:</strong></p>
+                    $$L_{recon} = \mathbb{E}_{q_\phi(z|x)}[\|x - D_\theta(z)\|_1]$$
+                    
+                    <p><strong>Adversarial Loss:</strong></p>
+                    $$L_{adv} = \mathbb{E}_{x \sim p_{data}}[\log D(x)] + \mathbb{E}_{z \sim q_\phi(z|x)}[\log(1 - D(D_\theta(z)))]$$
+                    
+                    <p><strong>Total Loss:</strong></p>
+                    $$L_{total} = L_{recon} + \lambda_{kl} L_{kl} + \lambda_{adv} L_{adv}$$
+                    
+                    <p><strong>Monotonic Alignment Search:</strong></p>
+                    $$A^* = \arg\max_A \sum_{i,j} A_{i,j} \log \mathcal{N}(z_j | \mu_i, \sigma_i^2)$$
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>📝 Text Input</h3>
+                    <textarea id="vits-text" placeholder="Enter text for synthesis...">Hello, this is a test of VITS voice synthesis.</textarea>
+                    <div class="controls">
+                        <label>Speaker ID:</label>
+                        <input type="range" id="vits-speaker" min="0" max="10" value="0" step="1" oninput="updateVITSParams()">
+                        <span class="value-display" id="vits-speaker-value">0</span>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3>🔧 VITS Parameters</h3>
+                    <div class="controls">
+                        <label>KL Weight (λ_kl):</label>
+                        <input type="range" id="lambda-kl" min="0.1" max="2.0" value="1.0" step="0.1" oninput="updateVITSParams()">
+                        <span class="value-display" id="lambda-kl-value">1.0</span>
+                    </div>
+                    <div class="controls">
+                        <label>Adversarial Weight (λ_adv):</label>
+                        <input type="range" id="lambda-adv" min="0.1" max="2.0" value="1.0" step="0.1" oninput="updateVITSParams()">
+                        <span class="value-display" id="lambda-adv-value">1.0</span>
+                    </div>
+                    <div class="controls">
+                        <label>Noise Scale:</label>
+                        <input type="range" id="noise-scale" min="0.1" max="1.0" value="0.667" step="0.01" oninput="updateVITSParams()">
+                        <span class="value-display" id="noise-scale-value">0.667</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button onclick="synthesizeVITS()" class="btn-success">🎵 Synthesize (VITS)</button>
+                <button onclick="visualizeVITS()" class="btn-warning">📊 Visualize Latent Space</button>
+            </div>
+
+            <div class="panel">
+                <h3>📈 Mel-Spectrogram</h3>
+                <canvas id="vits-mel-spec"></canvas>
+            </div>
+            <div class="panel">
+                <h3>🎵 Synthesized Audio</h3>
+                <audio id="vits-output-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+            </div>
+        </div>
+
+        <!-- WaveNet Tab -->
+        <div id="wavenet" class="tab-content">
+            <div class="paper-reference">
+                <h4>📚 WaveNet: A Generative Model for Raw Audio</h4>
+                <p><strong>Authors:</strong> Aaron van den Oord, Sander Dieleman, Heiga Zen, et al.</p>
+                <p><strong>Conference:</strong> NIPS 2016</p>
+                <p class="citation">"WaveNet: A generative model for raw audio." <em>arXiv preprint arXiv:1609.03499</em>, 2016.</p>
+            </div>
+
+            <div class="math-section">
+                <h4>Mathematical Formulation</h4>
+                <div class="formula-display">
+                    <p><strong>Dilated Causal Convolution:</strong></p>
+                    $$(f *_{d} x)(s) = \sum_{i=0}^{k-1} f(i) \cdot x(s - d \cdot i)$$
+                    
+                    <p><strong>Gated Activation Unit:</strong></p>
+                    $$z = \tanh(W_{f,k} * x) \odot \sigma(W_{g,k} * x)$$
+                    
+                    <p><strong>Residual Connection:</strong></p>
+                    $$h_i = h_{i-1} + z_i$$
+                    
+                    <p><strong>Skip Connection:</strong></p>
+                    $$s = \sum_{i=1}^{L} W_{skip,i} * z_i$$
+                    
+                    <p><strong>Output Distribution (μ-law):</strong></p>
+                    $$p(x_t | x_{&lt;t}, h) = \text{softmax}(W_{out} \cdot \tanh(W_{skip} \cdot s + W_{res} \cdot h_L))$$
+                    
+                    <p><strong>Likelihood:</strong></p>
+                    $$p(x) = \prod_{t=1}^{T} p(x_t | x_{1}, \ldots, x_{t-1})$$
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>🎤 Conditional Input</h3>
+                    <input type="file" id="wavenet-input" accept="audio/*" onchange="loadWaveNetInput()">
+                    <audio id="wavenet-input-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                </div>
+                <div class="panel">
+                    <h3>🔧 WaveNet Architecture</h3>
+                    <div class="controls">
+                        <label>Dilation Rates:</label>
+                        <input type="text" id="dilation-rates" value="1,2,4,8,16,32,64,128,256,512" onchange="updateWaveNetParams()">
+                    </div>
+                    <div class="controls">
+                        <label>Residual Channels:</label>
+                        <input type="range" id="res-channels" min="32" max="512" value="256" step="32" oninput="updateWaveNetParams()">
+                        <span class="value-display" id="res-channels-value">256</span>
+                    </div>
+                    <div class="controls">
+                        <label>Skip Channels:</label>
+                        <input type="range" id="skip-channels" min="32" max="512" value="256" step="32" oninput="updateWaveNetParams()">
+                        <span class="value-display" id="skip-channels-value">256</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button onclick="generateWaveNet()" class="btn-success">🎵 Generate Audio</button>
+                <button onclick="visualizeWaveNet()" class="btn-warning">📊 Visualize Architecture</button>
+            </div>
+
+            <div class="panel">
+                <h3>📈 Generated Waveform</h3>
+                <canvas id="wavenet-waveform"></canvas>
+            </div>
+            <div class="panel">
+                <h3>🎵 Generated Audio</h3>
+                <audio id="wavenet-output-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+            </div>
+        </div>
+
+        <!-- Spectral Analysis Tab -->
+        <div id="analysis" class="tab-content">
+            <div class="math-section">
+                <h4>Advanced Spectral Analysis</h4>
+                <div class="formula-display">
+                    <p><strong>Short-Time Fourier Transform (STFT):</strong></p>
+                    $$X(m,k) = \sum_{n=0}^{N-1} x(n+mH)w(n)e^{-j2\pi kn/N}$$
+                    
+                    <p><strong>Mel-Scale Transformation:</strong></p>
+                    $$m = 2595 \log_{10}(1 + f/700)$$
+                    
+                    <p><strong>Linear Predictive Coding (LPC):</strong></p>
+                    $$x(n) = \sum_{i=1}^{p} a_i x(n-i) + e(n)$$
+                    
+                    <p><strong>LPC Coefficients:</strong></p>
+                    $$A(z) = 1 - \sum_{i=1}^{p} a_i z^{-i}$$
+                    
+                    <p><strong>Cepstral Analysis:</strong></p>
+                    $$c(n) = \frac{1}{2\pi} \int_{-\pi}^{\pi} \log|X(e^{j\omega})| e^{j\omega n} d\omega$$
+                    
+                    <p><strong>MFCC:</strong></p>
+                    $$MFCC_i = \sum_{j=1}^{M} m_j \cos\left(\frac{\pi i}{M}(j-0.5)\right)$$
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>🎤 Audio Input</h3>
+                    <input type="file" id="analysis-input" accept="audio/*" onchange="loadAnalysisInput()">
+                    <audio id="analysis-input-audio" controls style="width: 100%; margin: 15px 0;"></audio>
+                </div>
+                <div class="panel">
+                    <h3>🔧 Analysis Parameters</h3>
+                    <div class="controls">
+                        <label>FFT Size:</label>
+                        <select id="analysis-fft-size" onchange="updateAnalysis()">
+                            <option value="512">512</option>
+                            <option value="1024" selected>1024</option>
+                            <option value="2048">2048</option>
+                            <option value="4096">4096</option>
+                        </select>
+                    </div>
+                    <div class="controls">
+                        <label>Window Function:</label>
+                        <select id="analysis-window" onchange="updateAnalysis()">
+                            <option value="hamming" selected>Hamming</option>
+                            <option value="hanning">Hanning</option>
+                            <option value="blackman">Blackman</option>
+                            <option value="kaiser">Kaiser</option>
+                        </select>
+                    </div>
+                    <div class="controls">
+                        <label>LPC Order:</label>
+                        <input type="range" id="lpc-order" min="8" max="32" value="16" step="1" oninput="updateAnalysis()">
+                        <span class="value-display" id="lpc-order-value">16</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-controls">
+                <button onclick="performAnalysis()" class="btn-success">📊 Perform Analysis</button>
+                <button onclick="extractMFCC()" class="btn-warning">🎯 Extract MFCC</button>
+            </div>
+
+            <div class="grid">
+                <div class="panel">
+                    <h3>🌈 Spectrogram</h3>
+                    <canvas id="analysis-spectrogram"></canvas>
+                </div>
+                <div class="panel">
+                    <h3>📊 LPC Spectrum</h3>
+                    <canvas id="analysis-lpc"></canvas>
+                </div>
+                <div class="panel">
+                    <h3>🎯 MFCC Features</h3>
+                    <canvas id="analysis-mfcc"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experiments Tab -->
+        <div id="experiments" class="tab-content">
+            <div class="panel">
+                <h3>📋 Experiment Log</h3>
+                <div class="experiment-log" id="experiment-log">
+                    <h5>Recent Experiments</h5>
+                    <div class="log-entry">No experiments yet. Start converting voices to log experiments.</div>
+                </div>
+                <div class="audio-controls">
+                    <button onclick="clearExperiments()" class="btn-danger">🗑️ Clear Log</button>
+                    <button onclick="exportExperiments()" class="btn-success">💾 Export Results</button>
+                    <button onclick="compareExperiments()" class="btn-warning">📊 Compare Methods</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>📈 Performance Metrics Comparison</h3>
+                <canvas id="metrics-comparison" style="height: 400px;"></canvas>
             </div>
         </div>
     </div>
 
-    <script>
-        // Netlify FunctionsまたはローカルAPIのベースURLを自動検出
-        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:5000/api'
-            : '/.netlify/functions';
-
-        // タスク管理機能
-        async function loadTasks() {
-            try {
-                const response = await fetch(`${API_BASE}/tasks`);
-                const tasks = await response.json();
-                displayTasks(tasks);
-                updateStats();
-            } catch (error) {
-                console.error('タスクの読み込みに失敗しました:', error);
-            }
-        }
-
-        async function addTask() {
-            const input = document.getElementById('task-input');
-            const text = input.value.trim();
-            
-            if (!text) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/tasks`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                });
-                
-                if (response.ok) {
-                    input.value = '';
-                    loadTasks();
-                }
-            } catch (error) {
-                console.error('タスクの追加に失敗しました:', error);
-                alert('タスクの追加に失敗しました');
-            }
-        }
-
-        async function toggleTask(id) {
-            try {
-                const response = await fetch(`${API_BASE}/tasks/${id}/toggle`, {
-                    method: 'PUT'
-                });
-                
-                if (response.ok) {
-                    loadTasks();
-                }
-            } catch (error) {
-                console.error('タスクの更新に失敗しました:', error);
-            }
-        }
-
-        async function deleteTask(id) {
-            if (!confirm('このタスクを削除しますか？')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/tasks/${id}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    loadTasks();
-                }
-            } catch (error) {
-                console.error('タスクの削除に失敗しました:', error);
-            }
-        }
-
-        function displayTasks(tasks) {
-            const list = document.getElementById('task-list');
-            
-            if (tasks.length === 0) {
-                list.innerHTML = '<li class="empty-state">タスクがありません</li>';
-                return;
-            }
-
-            list.innerHTML = tasks.map(task => `
-                <li class="task-item ${task.completed ? 'completed' : ''}">
-                    <span class="task-text">${escapeHtml(task.text)}</span>
-                    <div class="task-actions">
-                        <button class="btn-success" onclick="toggleTask(${task.id})">
-                            ${task.completed ? '↩ 未完了' : '✓ 完了'}
-                        </button>
-                        <button class="btn-danger" onclick="deleteTask(${task.id})">削除</button>
-                    </div>
-                </li>
-            `).join('');
-        }
-
-        // メモ機能
-        async function loadMemos() {
-            try {
-                const response = await fetch(`${API_BASE}/memos`);
-                const memos = await response.json();
-                displayMemos(memos);
-                updateStats();
-            } catch (error) {
-                console.error('メモの読み込みに失敗しました:', error);
-            }
-        }
-
-        async function addMemo() {
-            const titleInput = document.getElementById('memo-title');
-            const contentInput = document.getElementById('memo-content');
-            const title = titleInput.value.trim();
-            const content = contentInput.value.trim();
-
-            if (!title || !content) {
-                alert('タイトルと内容を入力してください');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/memos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, content })
-                });
-                
-                if (response.ok) {
-                    titleInput.value = '';
-                    contentInput.value = '';
-                    loadMemos();
-                }
-            } catch (error) {
-                console.error('メモの追加に失敗しました:', error);
-                alert('メモの追加に失敗しました');
-            }
-        }
-
-        async function deleteMemo(id) {
-            if (!confirm('このメモを削除しますか？')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/memos/${id}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    loadMemos();
-                }
-            } catch (error) {
-                console.error('メモの削除に失敗しました:', error);
-            }
-        }
-
-        function displayMemos(memos) {
-            const list = document.getElementById('memo-list');
-            
-            if (memos.length === 0) {
-                list.innerHTML = '<div class="empty-state">メモがありません</div>';
-                return;
-            }
-
-            list.innerHTML = memos.map(memo => `
-                <div class="memo-item">
-                    <div class="memo-header">
-                        <div class="memo-title">${escapeHtml(memo.title)}</div>
-                        <div class="memo-date">${formatDate(memo.created_at)}</div>
-                    </div>
-                    <div class="memo-content">${escapeHtml(memo.content)}</div>
-                    <div class="memo-actions">
-                        <button class="btn-danger" onclick="deleteMemo(${memo.id})">削除</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 統計更新
-        async function updateStats() {
-            try {
-                const [tasksRes, memosRes] = await Promise.all([
-                    fetch(`${API_BASE}/tasks`),
-                    fetch(`${API_BASE}/memos`)
-                ]);
-                
-                const tasks = await tasksRes.json();
-                const memos = await memosRes.json();
-                
-                const completed = tasks.filter(t => t.completed).length;
-                const pending = tasks.length - completed;
-                
-                document.getElementById('total-tasks').textContent = tasks.length;
-                document.getElementById('completed-tasks').textContent = completed;
-                document.getElementById('pending-tasks').textContent = pending;
-                document.getElementById('total-memos').textContent = memos.length;
-            } catch (error) {
-                console.error('統計の更新に失敗しました:', error);
-            }
-        }
-
-        // ユーティリティ関数
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleString('ja-JP', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        // Enterキーでタスク追加
-        document.getElementById('task-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTask();
-        });
-
-        // 初期化
-        window.onload = () => {
-            loadTasks();
-            loadMemos();
-        };
-    </script>
+    <script src="research.js"></script>
+    <script src="research_advanced.js"></script>
 </body>
 </html>
-
