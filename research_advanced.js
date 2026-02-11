@@ -1100,6 +1100,49 @@ window.addEventListener('DOMContentLoaded', () => {
     initAudioContext();
     console.log('AudioContext initialized');
     
+    // ファイル入力のイベントリスナーを設定
+    const cycleganSourceInput = document.getElementById('cyclegan-source');
+    if (cycleganSourceInput) {
+        cycleganSourceInput.addEventListener('change', loadCycleGANSource);
+        console.log('CycleGAN source input listener attached');
+    }
+    
+    const cycleganTargetInput = document.getElementById('cyclegan-target');
+    if (cycleganTargetInput) {
+        cycleganTargetInput.addEventListener('change', loadCycleGANTarget);
+        console.log('CycleGAN target input listener attached');
+    }
+    
+    const starganSourceInput = document.getElementById('stargan-source');
+    if (starganSourceInput) {
+        starganSourceInput.addEventListener('change', loadStarGANSource);
+        console.log('StarGAN source input listener attached');
+    }
+    
+    const autovcSourceInput = document.getElementById('autovc-source');
+    if (autovcSourceInput) {
+        autovcSourceInput.addEventListener('change', loadAutoVCSource);
+        console.log('AutoVC source input listener attached');
+    }
+    
+    const autovcTargetInput = document.getElementById('autovc-target');
+    if (autovcTargetInput) {
+        autovcTargetInput.addEventListener('change', loadAutoVCTarget);
+        console.log('AutoVC target input listener attached');
+    }
+    
+    const wavenetInput = document.getElementById('wavenet-input');
+    if (wavenetInput) {
+        wavenetInput.addEventListener('change', loadWaveNetInput);
+        console.log('WaveNet input listener attached');
+    }
+    
+    const analysisInput = document.getElementById('analysis-input');
+    if (analysisInput) {
+        analysisInput.addEventListener('change', loadAnalysisInput);
+        console.log('Analysis input listener attached');
+    }
+    
     // パラメータの初期化
     try {
         if (document.getElementById('lambda-cyc')) {
@@ -1139,7 +1182,13 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    console.log('Platform initialized successfully');
+    console.log('✓ Platform initialized successfully');
+    console.log('Functions available:', {
+        switchTab: typeof switchTab,
+        loadCycleGANSource: typeof loadCycleGANSource,
+        convertCycleGAN: typeof convertCycleGAN,
+        initAudioContext: typeof initAudioContext
+    });
 });
 
 // フォールバック: window.onloadも設定

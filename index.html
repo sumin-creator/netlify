@@ -472,7 +472,7 @@
             <div class="grid">
                 <div class="panel">
                     <h3>🎤 Source Voice Input</h3>
-                    <input type="file" id="cyclegan-source" accept="audio/wav,audio/*" onchange="loadCycleGANSource()" style="margin-bottom: 10px;">
+                    <input type="file" id="cyclegan-source" accept="audio/wav,audio/*" style="margin-bottom: 10px;">
                     <div id="cyclegan-source-status" style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 0.9em; min-height: 20px;"></div>
                     <audio id="cyclegan-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                     <div class="info-box">
@@ -482,7 +482,7 @@
 
                 <div class="panel">
                     <h3>🎭 Target Voice Reference</h3>
-                    <input type="file" id="cyclegan-target" accept="audio/*" onchange="loadCycleGANTarget()">
+                    <input type="file" id="cyclegan-target" accept="audio/*">
                     <audio id="cyclegan-target-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                     <div class="info-box">
                         <strong>Reference:</strong> Target speaker's voice sample (for style extraction)
@@ -589,7 +589,7 @@
             <div class="grid">
                 <div class="panel">
                     <h3>🎤 Source Voice</h3>
-                    <input type="file" id="stargan-source" accept="audio/*" onchange="loadStarGANSource()">
+                    <input type="file" id="stargan-source" accept="audio/*">
                     <audio id="stargan-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                 </div>
                 <div class="panel">
@@ -677,12 +677,12 @@
             <div class="grid">
                 <div class="panel">
                     <h3>🎤 Source Voice</h3>
-                    <input type="file" id="autovc-source" accept="audio/*" onchange="loadAutoVCSource()">
+                    <input type="file" id="autovc-source" accept="audio/*">
                     <audio id="autovc-source-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                 </div>
                 <div class="panel">
                     <h3>🎯 Target Voice (Reference)</h3>
-                    <input type="file" id="autovc-target" accept="audio/*" onchange="loadAutoVCTarget()">
+                    <input type="file" id="autovc-target" accept="audio/*">
                     <audio id="autovc-target-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                     <div class="info-box">
                         <strong>Zero-Shot:</strong> No training data required for target speaker
@@ -836,7 +836,7 @@
             <div class="grid">
                 <div class="panel">
                     <h3>🎤 Conditional Input</h3>
-                    <input type="file" id="wavenet-input" accept="audio/*" onchange="loadWaveNetInput()">
+                    <input type="file" id="wavenet-input" accept="audio/*">
                     <audio id="wavenet-input-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                 </div>
                 <div class="panel">
@@ -901,7 +901,7 @@
             <div class="grid">
                 <div class="panel">
                     <h3>🎤 Audio Input</h3>
-                    <input type="file" id="analysis-input" accept="audio/*" onchange="loadAnalysisInput()">
+                    <input type="file" id="analysis-input" accept="audio/*">
                     <audio id="analysis-input-audio" controls style="width: 100%; margin: 15px 0;"></audio>
                 </div>
                 <div class="panel">
