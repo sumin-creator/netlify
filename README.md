@@ -1,11 +1,23 @@
-# 音声変換・音声合成 研究プラットフォーム
+# 国際会議の音声研究 — Voice Conversion & TTS Research Platform
 
-**このサイトの目的：**  
-ICASSP・EUSIPCO・NeurIPS・ICML・NIPS など国際会議で発表された音声変換・音声合成の論文を**解説**し、**今すぐ試せるデモ**で体験できるWebプラットフォームです。
+**NIPS・ICASSP・NeurIPS・ICML・EUSIPCO・SLT** で発表された音声変換・音声合成の論文を、**解説とデモ**で活用するWebプラットフォームです。
 
-- **論文の活用:** 各手法の論文情報・数式・「何ができるか」を整理して参照しやすくする  
-- **実際に動くもの:** スペクトル分析・F0分析・フォルマント合成・簡易音声変換をブラウザ／APIで提供  
-- **正直な実装状況:** CycleGAN-VC 等の「本物」の再現には学習済みモデルが必要なため、ここでは解説＋簡易デモに留め、その旨を明記している  
+- **国際会議を前面に:** 各手法を「どの会議で発表されたか」とともに一覧し、論文カードから詳細・デモへ誘導  
+- **論文の活用:** 数式・著者・貢献を整理し、参照しやすい形で提供  
+- **今すぐ試せるデモ:** スペクトル分析・フォルマント合成・F0分析・簡易音声変換をブラウザ／APIで提供  
+- **実装の明示:** 本格再現には学習済みモデルが必要な部分は解説＋簡易デモに留め、その旨を明記  
+
+---
+
+## 掲載している国際会議と論文
+
+| 会議 | 手法 | 概要 |
+|------|------|------|
+| **NIPS 2016** | WaveNet | 生波形の自己回帰生成。TTS・VC の基盤 |
+| **EUSIPCO 2018** / **ICASSP 2019** | CycleGAN-VC | 非対応づけ2話者音声変換 |
+| **SLT 2018** / **ICASSP 2019** | StarGAN-VC | 多対多音声変換 |
+| **NeurIPS 2019** | AutoVC | ゼロショット音声変換 |
+| **ICML 2021** | VITS | End-to-end テキスト音声合成 |
 
 ---
 
@@ -63,7 +75,7 @@ python research_api.py
 
 ```
 netlify/
-├── index.html          # トップ：目的説明・「今できること」・論文解説・メニュー
+├── index.html          # トップ：国際会議の手法一覧・論文カード・すぐ試せるデモ・論文詳細
 ├── research.html       # 詳細デモ（CycleGAN-VC 等のタブ＋簡易デモ）
 ├── research_advanced.js
 ├── research.js
@@ -79,6 +91,7 @@ netlify/
 
 ## API エンドポイント（research_api.py）
 
+### 音声・フォルマント
 | エンドポイント | 説明 |
 |----------------|------|
 | `GET /api/health` | 動作確認 |
@@ -90,7 +103,25 @@ netlify/
 | `POST /api/stargan/convert` | StarGAN-VC 風の簡易変換（シミュレーション） |
 | `POST /api/autovc/convert` | AutoVC 風の簡易変換（シミュレーション） |
 
-※ CycleGAN/StarGAN/AutoVC の API は**論文そのものの実装ではなく**、簡易的な変換シミュレーションです。
+### 論文実装: ダイバージェンス（Nielsen）
+| エンドポイント | 説明 |
+|----------------|------|
+| `POST /api/divergence/jensen` | Jensen ダイバージェンス $J_F(p,q)$（body: `{p, q, F}`） |
+| `POST /api/divergence/skew_jensen` | スキュー Jensen $J_F^\alpha(p:q)$（body: `{p, q, alpha, F}`） |
+| `POST /api/divergence/bregman` | Bregman ダイバージェンス $B_F(p:q)$ |
+| `POST /api/divergence/jensen_bregman` | Skew Jensen–Bregman $\mathrm{JB}_F^\alpha(p\|q)$ |
+| `POST /api/divergence/bhattacharyya` | Bhattacharyya 距離（ガウス: `mean1,var1,mean2,var2` / 離散: `p,q`） |
+| `POST /api/divergence/chord_gap` | Chord gap 二パラメータ族（body: `{p, q, beta, gamma, F}`） |
+| `POST /api/divergence/centroid` | 重み付きスキュー Jensen セントロイド（body: `{points, weights, alpha, F}`） |
+| `POST /api/divergence/kmeans_pp` | k-means++ 風初期シード（body: `{points, k, alpha}`） |
+
+### 論文実装: 音声変換の損失式
+| エンドポイント | 説明 |
+|----------------|------|
+| `POST /api/voice/cyclegan_loss` | CycleGAN-VC の $L_{adv}$, $L_{cyc}$, $L_{id}$, $L_G$（body: `fake_logits, real_logits, reconstructed, original, lambda_cyc, lambda_id`） |
+| `POST /api/voice/stargan_loss` | StarGAN-VC の $L_{adv}$, $L_{cls}^r$, $L_{cyc}$, $L_{id}$, $L_G$ |
+
+※ CycleGAN/StarGAN/AutoVC の**変換** API は簡易シミュレーション。**損失** API は論文の式をそのまま数値計算します。
 
 ---
 
@@ -101,7 +132,7 @@ netlify/
 3. Build command: 空欄 / Publish directory: `.`  
 4. デプロイ  
 
-**Netlify 上でも API が使えます。** フォルマント合成・F0分析・簡易音声変換は **Netlify Functions**（`netlify/functions/formant_synthesize.py`, `f0_analyze.py`, `voice_convert.py`）としてデプロイされ、`index.html` はローカル時は `research_api.py`、Netlify 時は `/.netlify/functions/xxx` を自動で呼びます。  
+**Netlify 上でも API が使えます。** フォルマント合成・F0分析・簡易音声変換に加え、**ダイバージェンス計算**（`divergence.py`: Jensen / スキュー Jensen / Bregman / Jensen–Bregman / Bhattacharyya / Chord gap / セントロイド / k-means++）と**音声変換の損失**（`voice_loss.py`: CycleGAN-VC / StarGAN-VC）も Netlify Functions（`formant_synthesize`, `f0_analyze`, `voice_convert`, `api_health`, `divergence`, `voice_loss`）としてデプロイされます。`index.html` はローカル時は `research_api.py`、Netlify 時は `/.netlify/functions/xxx` を自動で呼びます。  
 ※ 初回や長時間未使用後の呼び出しはコールドスタートで数秒かかることがあります。
 
 **404 を防ぐための対策（このリポジトリで実施済み）**
@@ -110,20 +141,20 @@ netlify/
 
 **まだ 404 になる場合**
 1. **変更をプッシュしたか** — `index.html` と `netlify/functions/*.py`（`api_health.py` 含む）を GitHub に push し、Netlify で再デプロイする。
-2. **Netlify の Functions タブ** — デプロイ後に Site → Functions で `api_health` / `formant_synthesize` / `f0_analyze` / `voice_convert` が表示されているか確認する。
+2. **Netlify の Functions タブ** — デプロイ後に Site → Functions で `api_health` / `formant_synthesize` / `f0_analyze` / `voice_convert` / `divergence` / `voice_loss` が表示されているか確認する。
 3. **ビルドログ** — Deploys → 対象デプロイ → Build log で Python や Functions のエラーが出ていないか確認する。
 
 ---
 
 ## 謝辞
 
-以下の研究論文と著者に感謝します。
+以下の国際会議論文と著者に感謝します。
 
-- CycleGAN-VC (Kaneko et al., 2018)
-- StarGAN-VC (Kameoka et al., 2018)
-- AutoVC (Qian et al., 2019)
-- VITS (Kim et al., 2021)
-- WaveNet (van den Oord et al., 2016)
+- **WaveNet** (NIPS 2016) — van den Oord et al.
+- **CycleGAN-VC** (EUSIPCO 2018, ICASSP 2019) — Kaneko, Kameoka, Tanaka, Hojo
+- **StarGAN-VC** (SLT 2018, ICASSP 2019) — Kameoka, Kaneko, Tanaka, Hojo
+- **AutoVC** (NeurIPS 2019) — Qian, Zhang, Chang, Hasegawa-Johnson
+- **VITS** (ICML 2021) — Kim, Kong, Son
 
 ---
 

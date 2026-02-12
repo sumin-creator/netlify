@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音声変換・合成 研究プラットフォーム｜論文解説とデモ</title>
+    <title>国際会議の音声研究｜Voice Conversion & TTS Research Platform</title>
+    <meta name="description" content="NIPS, ICASSP, NeurIPS, ICML, EUSIPCO, SLT で発表された音声変換・音声合成の論文を解説し、デモで体験するプラットフォーム。">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] } };</script>
     <style>
         :root {
-            --bg-dark: #0f1419;
-            --bg-card: #1a2332;
+            --bg-dark: #0b0f14;
+            --bg-card: #141b24;
             --accent: #3b82f6;
             --accent-soft: rgba(59, 130, 246, 0.15);
             --text: #e2e8f0;
@@ -20,94 +21,89 @@
             --warning: #eab308;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 
-        /* ヒーロー：このサイトの目的 */
         .hero {
             text-align: center;
-            padding: 48px 24px 40px;
-            margin-bottom: 32px;
-            background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
+            padding: 56px 24px 48px;
+            margin-bottom: 40px;
+            background: linear-gradient(160deg, var(--bg-card) 0%, rgba(30,58,95,0.3) 50%, transparent 100%);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
         }
         .hero h1 {
-            font-size: clamp(1.5rem, 4vw, 2.2rem);
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #fff;
-        }
-        .hero .purpose {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            max-width: 720px;
-            margin: 0 auto 20px;
-        }
-        .hero .purpose strong { color: var(--accent); }
-        .badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            background: var(--accent-soft);
-            color: var(--accent);
-            margin: 4px;
-        }
-
-        /* 今できること */
-        .section-title {
-            font-size: 1.35rem;
-            font-weight: 700;
+            font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+            font-weight: 800;
             margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--accent);
+            color: #fff;
+            letter-spacing: -0.02em;
         }
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+        .hero .tagline {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto 24px;
         }
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            transition: border-color 0.2s;
-        }
-        .card:hover { border-color: var(--accent); }
-        .card h3 { font-size: 1.1rem; margin-bottom: 8px; color: #fff; }
-        .card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
-        .card .status {
-            font-size: 0.8rem;
-            color: var(--success);
-        }
-        .card .status.demo-only { color: var(--warning); }
-
-        /* タブ */
-        .tabs {
+        .hero .tagline strong { color: var(--accent); }
+        .conf-strip {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }
-        .tab {
-            padding: 12px 20px;
-            background: var(--bg-card);
-            color: var(--text);
-            border: 1px solid var(--border);
+        .conf-badge {
+            display: inline-block;
+            padding: 8px 14px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
         }
+        .conf-badge.nips  { background: rgba(139, 92, 246, 0.25); color: #a78bfa; }
+        .conf-badge.eusipco { background: rgba(34, 197, 94, 0.2);  color: #4ade80; }
+        .conf-badge.slt   { background: rgba(249, 115, 22, 0.2);  color: #fb923c; }
+        .conf-badge.icassp{ background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
+        .conf-badge.neurips{ background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .conf-badge.icml  { background: rgba(236, 72, 153, 0.2);  color: #f472b6; }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+            color: #fff;
+        }
+        .section-intro { color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem; }
+
+        /* 国際会議 論文カード */
+        .papers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        .paper-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .paper-card:hover { border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .paper-card .conf-badges { margin-bottom: 12px; }
+        .paper-card .conf-badges .conf-badge { margin-right: 6px; margin-bottom: 6px; }
+        .paper-card h3 { font-size: 1.15rem; margin-bottom: 8px; color: #fff; line-height: 1.35; }
+        .paper-card .authors { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; }
+        .paper-card .impact { font-size: 0.9rem; color: var(--text); margin-bottom: 14px; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
+        .paper-card .cta { font-size: 0.9rem; }
+        .paper-card .cta a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        .paper-card .cta a:hover { text-decoration: underline; }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+        .tab { padding: 12px 20px; background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
         .tab:hover { background: var(--accent-soft); border-color: var(--accent); }
         .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
         .tab-content { display: none; }
@@ -120,85 +116,45 @@
             padding: 24px;
             margin-bottom: 20px;
         }
-        .panel h3 {
-            font-size: 1.15rem;
-            margin-bottom: 12px;
-            color: #fff;
-        }
+        .panel h3 { font-size: 1.15rem; margin-bottom: 12px; color: #fff; }
         .paper-ref {
-            background: rgba(234, 179, 8, 0.1);
+            background: rgba(234, 179, 8, 0.08);
             border-left: 4px solid var(--warning);
             padding: 16px;
             border-radius: 8px;
             margin-bottom: 16px;
             font-size: 0.9rem;
         }
-        .paper-ref h4 { color: #facc15; margin-bottom: 8px; }
+        .paper-ref h4 { color: #facc15; margin-bottom: 8px; font-size: 1rem; }
         .paper-ref p { color: var(--text-muted); }
-        .impl-note {
-            background: rgba(34, 197, 94, 0.1);
-            border-left: 4px solid var(--success);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            font-size: 0.9rem;
-        }
-        .impl-note.warn { background: rgba(234, 179, 8, 0.1); border-left-color: var(--warning); }
-        .math-block {
-            background: #0f172a;
-            padding: 16px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 12px 0;
-            font-size: 0.95rem;
-        }
+        .impl-note { background: rgba(34, 197, 94, 0.08); border-left: 4px solid var(--success); padding: 12px; border-radius: 8px; margin: 12px 0; font-size: 0.9rem; }
+        .impl-note.warn { background: rgba(234, 179, 8, 0.08); border-left-color: var(--warning); }
+        .math-block { background: #0f172a; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.95rem; }
         .controls { margin: 12px 0; }
         label { display: block; margin-bottom: 4px; font-size: 0.9rem; color: var(--text-muted); }
         input[type="file"], input[type="range"], select, textarea {
-            width: 100%;
-            max-width: 400px;
-            padding: 8px 12px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            margin-bottom: 8px;
+            width: 100%; max-width: 400px; padding: 8px 12px; background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); margin-bottom: 8px;
         }
-        button {
-            padding: 12px 24px;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 4px 8px 4px 0;
-        }
+        button { padding: 12px 24px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin: 4px 8px 4px 0; }
         button:hover { filter: brightness(1.1); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         audio { width: 100%; max-width: 500px; margin: 12px 0; }
-        canvas {
-            width: 100%;
-            max-height: 280px;
-            background: #0f172a;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin: 12px 0;
-        }
+        canvas { width: 100%; max-height: 280px; background: #0f172a; border-radius: 8px; border: 1px solid var(--border); margin: 12px 0; }
         .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
         #api-unavailable-banner {
-            display: none;
-            background: rgba(234, 179, 8, 0.2);
-            border: 1px solid var(--warning);
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            color: #facc15;
-            font-size: 0.95rem;
+            display: none; background: rgba(234, 179, 8, 0.15); border: 1px solid var(--warning); border-radius: 8px;
+            padding: 12px 16px; margin-bottom: 20px; color: #facc15; font-size: 0.95rem;
         }
         #api-unavailable-banner.show { display: block; }
         #api-unavailable-banner a { color: #93c5fd; }
+
+        .footer-ack {
+            margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+            font-size: 0.9rem; color: var(--text-muted); text-align: center;
+        }
+        .footer-ack strong { color: var(--text); }
     </style>
 </head>
 <body>
@@ -206,63 +162,96 @@
         <div id="api-unavailable-banner" role="alert">
             <strong>API（Netlify Functions）が利用できません。</strong><br>
             フォルマント合成・F0分析・簡易音声変換は、デプロイ完了後またはしばらく待ってからお試しください。<br>
-            <a href="https://docs.netlify.com/functions/overview/" target="_blank" rel="noopener">Netlify Functions</a> が有効か、デプロイログでエラーがないかご確認ください。
+            <a href="https://docs.netlify.com/functions/overview/" target="_blank" rel="noopener">Netlify Functions</a> のデプロイ状況をご確認ください。
         </div>
+
         <header class="hero">
-            <h1>音声変換・音声合成 研究プラットフォーム</h1>
-            <p class="purpose">
-                <strong>ICASSP・EUSIPCO・NeurIPS・ICML・NIPS</strong> など国際会議で発表された音声変換・合成の論文を
-                <strong>解説</strong>し、<strong>今すぐ試せるデモ</strong>で体験できるサイトです。
+            <h1>国際会議の音声研究を、解説とデモで体験する</h1>
+            <p class="tagline">
+                <strong>NIPS・ICASSP・NeurIPS・ICML・EUSIPCO・SLT</strong> で発表された音声変換・音声合成の論文を、数式・解説と「今すぐ試せるデモ」で学べるプラットフォームです。
             </p>
-            <p class="purpose">
-                論文の数式・アイデアを参照しつつ、ブラウザやローカルAPIで「実際に動く処理」を試せます。
-            </p>
-            <span class="badge">論文解説</span>
-            <span class="badge">スペクトル・F0・フォルマント デモ</span>
-            <span class="badge">簡易音声変換デモ</span>
+            <div class="conf-strip">
+                <span class="conf-badge nips">NIPS 2016</span>
+                <span class="conf-badge eusipco">EUSIPCO 2018</span>
+                <span class="conf-badge slt">SLT 2018</span>
+                <span class="conf-badge icassp">ICASSP 2019</span>
+                <span class="conf-badge neurips">NeurIPS 2019</span>
+                <span class="conf-badge icml">ICML 2021</span>
+            </div>
         </header>
 
-        <h2 class="section-title">このサイトで今できること</h2>
-        <div class="cards">
-            <div class="card">
-                <h3>📊 スペクトル分析</h3>
-                <p>音声のSTFT・スペクトログラム・LPC・MFCCを計算し可視化。論文で出てくる「メルスペクトログラム」のイメージがつかめます。</p>
-                <span class="status">✅ 実装済み（ブラウザ＋API）</span>
+        <h2 class="section-title">国際会議で発表された手法</h2>
+        <p class="section-intro">音声変換・音声合成の代表的な国際会議論文を年代順に掲載。各手法の概要と、このサイトでできることをまとめています。距離・ダイバージェンス（Jensen, Bregman, Bhattacharyya, Chord Gap）の理論は<strong> <a href="#" onclick="switchTab('divergence', document.getElementById('tab-divergence')); return false;" style="color: var(--accent);">理論・ダイバージェンス</a></strong>タブで数式付きで解説しています。</p>
+
+        <div class="papers-grid">
+            <div class="paper-card">
+                <div class="conf-badges"><span class="conf-badge nips">NIPS 2016</span></div>
+                <h3>WaveNet: A Generative Model for Raw Audio</h3>
+                <p class="authors">van den Oord, Dieleman, Zen, et al. (DeepMind)</p>
+                <p class="impact">生波形を自己回帰で生成。TTS・VC のボコーダの基盤となり、後の VITS などに影響。</p>
+                <p class="cta"><a href="#" onclick="switchTab('papers', this); document.getElementById('papers').querySelector('.panel:last-of-type').scrollIntoView(); return false;">論文詳細・数式 →</a></p>
             </div>
-            <div class="card">
-                <h3>🎚️ フォルマント合成</h3>
-                <p>F0・フォルマント周波数で合成音を生成。古典的な音声合成の基礎を体験できます。</p>
-                <span class="status">✅ 実装済み（API）</span>
+            <div class="paper-card">
+                <div class="conf-badges"><span class="conf-badge eusipco">EUSIPCO 2018</span><span class="conf-badge icassp">ICASSP 2019</span></div>
+                <h3>CycleGAN-VC: Non-parallel Voice Conversion</h3>
+                <p class="authors">Kaneko, Kameoka, Tanaka, Hojo</p>
+                <p class="impact">対応づけのない2話者データで、Cycle 一貫性と敵対学習により話者変換を実現。</p>
+                <p class="cta"><a href="research.html">詳細デモ・パラメータ →</a> ｜ <a href="#" onclick="switchTab('papers', this); return false;">数式・解説</a></p>
             </div>
-            <div class="card">
-                <h3>📈 F0（基本周波数）分析</h3>
-                <p>音声からピッチ軌跡を推定し表示。音声変換の前処理として重要です。</p>
-                <span class="status">✅ 実装済み（API）</span>
+            <div class="paper-card">
+                <div class="conf-badges"><span class="conf-badge slt">SLT 2018</span><span class="conf-badge icassp">ICASSP 2019</span></div>
+                <h3>StarGAN-VC: Many-to-Many Voice Conversion</h3>
+                <p class="authors">Kameoka, Kaneko, Tanaka, Hojo</p>
+                <p class="impact">1つの Generator で複数話者間の多対多変換。ドメイン分類損失で話者を制御。</p>
+                <p class="cta"><a href="research.html">詳細デモ →</a> ｜ <a href="#" onclick="switchTab('papers', this); return false;">数式・解説</a></p>
             </div>
-            <div class="card">
-                <h3>🔄 簡易音声変換</h3>
-                <p>ピッチシフトなど簡易変換。CycleGAN-VC 等の「本物」は学習済みモデルが必要で、ここでは簡易デモのみ。</p>
-                <span class="status demo-only">⚠️ 簡易デモ（論文そのものの再現ではない）</span>
+            <div class="paper-card">
+                <div class="conf-badges"><span class="conf-badge neurips">NeurIPS 2019</span></div>
+                <h3>AutoVC: Zero-Shot Voice Style Transfer</h3>
+                <p class="authors">Qian, Zhang, Chang, Hasegawa-Johnson</p>
+                <p class="impact">ターゲット話者の学習データなしで、数秒の参照音声からゼロショット音声変換。</p>
+                <p class="cta"><a href="#" onclick="switchTab('papers', this); return false;">論文詳細・数式 →</a></p>
             </div>
-            <div class="card">
-                <h3>📚 国際会議論文の解説</h3>
-                <p>CycleGAN-VC, StarGAN-VC, AutoVC, VITS, WaveNet の論文・数式・リンクを整理。</p>
-                <span class="status">✅ 解説・参照用</span>
+            <div class="paper-card">
+                <div class="conf-badges"><span class="conf-badge icml">ICML 2021</span></div>
+                <h3>VITS: Conditional VAE with Adversarial Learning for TTS</h3>
+                <p class="authors">Kim, Kong, Son (Kakao)</p>
+                <p class="impact">テキストから自然な音声を end-to-end で合成。VAE・敵対学習・Monotonic Alignment を組み合わせた TTS。</p>
+                <p class="cta"><a href="#" onclick="switchTab('demo', this); return false;">フォルマントデモで雰囲気を体験 →</a> ｜ <a href="#" onclick="switchTab('papers', this); return false;">数式</a></p>
             </div>
         </div>
 
         <h2 class="section-title">メニュー</h2>
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('demo', this)">すぐ使えるデモ</button>
-            <button class="tab" onclick="switchTab('papers', this)">国際会議論文の解説</button>
-            <button class="tab" onclick="switchTab('advanced', this)">詳細デモ（従来タブ）</button>
+            <button class="tab" onclick="switchTab('conference', this)">国際会議の手法</button>
+            <button class="tab active" onclick="switchTab('demo', this)">すぐ試せるデモ</button>
+            <button class="tab" onclick="switchTab('papers', this)">論文詳細・数式</button>
+            <button class="tab" id="tab-divergence" onclick="switchTab('divergence', this)">理論・ダイバージェンス</button>
+            <button class="tab" onclick="switchTab('advanced', this)">詳細デモページ</button>
         </div>
 
-        <!-- すぐ使えるデモ -->
+        <!-- 国際会議の手法（タブ内で上記グリッドの要約を再掲） -->
+        <div id="conference" class="tab-content">
+            <div class="panel">
+                <h3>掲載している国際会議と論文</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">音声・信号処理・機械学習のトップカンファレンスで発表された手法を、解説とデモで活用できるようにしています。</p>
+                <ul style="color: var(--text-muted); padding-left: 20px; line-height: 1.9;">
+                    <li><strong class="conf-badge nips" style="padding: 2px 8px; margin-right: 8px;">NIPS 2016</strong> WaveNet</li>
+                    <li><strong class="conf-badge eusipco" style="padding: 2px 8px; margin-right: 8px;">EUSIPCO 2018</strong> CycleGAN-VC</li>
+                    <li><strong class="conf-badge slt" style="padding: 2px 8px; margin-right: 8px;">SLT 2018</strong> StarGAN-VC</li>
+                    <li><strong class="conf-badge icassp" style="padding: 2px 8px; margin-right: 8px;">ICASSP 2019</strong> CycleGAN-VC, StarGAN-VC</li>
+                    <li><strong class="conf-badge neurips" style="padding: 2px 8px; margin-right: 8px;">NeurIPS 2019</strong> AutoVC</li>
+                    <li><strong class="conf-badge icml" style="padding: 2px 8px; margin-right: 8px;">ICML 2021</strong> VITS</li>
+                </ul>
+                <p style="margin-top: 16px;"><a href="#" onclick="document.querySelector('.papers-grid').scrollIntoView({behavior:'smooth'}); return false;" style="color: var(--accent); font-weight: 600;">↑ 上記の論文カードへ</a></p>
+            </div>
+        </div>
+
+        <!-- すぐ試せるデモ -->
         <div id="demo" class="tab-content active">
             <div class="panel">
                 <h3>📊 スペクトル分析</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">WAVをアップロードするとスペクトログラム・波形を表示します（ブラウザ内で計算）。</p>
+                <p style="margin-bottom:12px; color: var(--text-muted);">論文でよく使われるメルスペクトログラムのイメージを、ブラウザ内で確認できます。</p>
                 <input type="file" id="demo-spectrum-file" accept="audio/wav,audio/*">
                 <button onclick="demoSpectrum()">分析して表示</button>
                 <div class="grid2" style="margin-top:16px;">
@@ -272,8 +261,8 @@
                 <audio id="demo-audio" controls style="margin-top:12px;"></audio>
             </div>
             <div class="panel">
-                <h3>🎚️ フォルマント合成（API使用）</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">F0・フォルマントで音を合成します。ローカルでは <code>python research_api.py</code>、Netlify では Functions が使われます。</p>
+                <h3>🎚️ フォルマント合成（API）</h3>
+                <p style="margin-bottom:12px; color: var(--text-muted);">古典的な音声合成の基礎。F0・フォルマントで音を生成します。</p>
                 <div class="controls">
                     <label>F0 (Hz)</label>
                     <input type="range" id="formant-f0" min="80" max="400" value="150">
@@ -283,17 +272,15 @@
                 <audio id="formant-audio" controls style="margin-top:12px;"></audio>
             </div>
             <div class="panel">
-                <h3>📈 F0分析（API使用）</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">音声を送るとF0軌跡を取得します。API起動時のみ。</p>
+                <h3>📈 F0分析（API）</h3>
+                <p style="margin-bottom:12px; color: var(--text-muted);">音声変換の前処理として重要な基本周波数（ピッチ）軌跡を推定します。</p>
                 <input type="file" id="demo-f0-file" accept="audio/wav,audio/*">
                 <button onclick="demoF0()">F0分析</button>
                 <pre id="f0-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.85rem; overflow:auto;"></pre>
             </div>
             <div class="panel">
-                <h3>🔄 簡易音声変換（API使用）</h3>
-                <div class="impl-note warn">
-                    <strong>注意：</strong> これは論文の CycleGAN-VC / StarGAN-VC そのものではありません。ピッチシフト等の簡易処理です。本格的なVCは学習済みモデルが必要です。
-                </div>
+                <h3>🔄 簡易音声変換（API）</h3>
+                <div class="impl-note warn">CycleGAN-VC / StarGAN-VC の「本物」は学習済みモデルが必要です。ここではピッチシフト等の簡易デモを提供しています。</div>
                 <input type="file" id="demo-vc-file" accept="audio/wav,audio/*">
                 <label>変換強度 (0–100%)</label>
                 <input type="range" id="demo-vc-strength" min="0" max="100" value="50">
@@ -302,80 +289,220 @@
             </div>
         </div>
 
-        <!-- 国際会議論文の解説 -->
+        <!-- 論文詳細・数式 -->
         <div id="papers" class="tab-content">
             <div class="panel">
                 <h3>このサイトでの位置づけ</h3>
-                <p style="color: var(--text-muted);">
-                    以下の手法は国際会議で発表された「本物」のアルゴリズムです。再現には学習済みモデルや大規模データが必要なため、
-                    このサイトでは <strong>論文の解説・数式の参照</strong> と、可能な範囲の <strong>簡易デモ</strong> のみ提供しています。
-                </p>
+                <p style="color: var(--text-muted);">以下の手法は国際会議で発表されたアルゴリズムです。本サイトでは <strong>論文の解説・数式の参照</strong> と、可能な範囲の <strong>簡易デモ</strong> を提供しています。本格再現には学習済みモデル・データセットが必要です。</p>
             </div>
             <div class="panel">
-                <h3>🔬 CycleGAN-VC</h3>
+                <span class="conf-badge eusipco">EUSIPCO 2018</span> <span class="conf-badge icassp">ICASSP 2019</span>
+                <h3>CycleGAN-VC</h3>
                 <div class="paper-ref">
                     <h4>CycleGAN-VC: Non-parallel voice conversion using cycle-consistent adversarial networks</h4>
                     <p><strong>著者:</strong> Takuhiro Kaneko, Hirokazu Kameoka, Kou Tanaka, Nobukatsu Hojo</p>
-                    <p><strong>会議:</strong> EUSIPCO 2018, ICASSP 2019</p>
                 </div>
-                <p><strong>何ができるか：</strong> 対応づけのない2話者データで、話者Aの声を話者Bの声に変換する。</p>
-                <div class="math-block">Generator: $L_G = L_{adv} + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$（敵対損失＋サイクル一貫性＋恒等写像）</div>
-                <div class="impl-note warn">このサイトでは「簡易スペクトル変換」で雰囲気を再現。本格再現は学習済みモデルが必要。</div>
+                <p><strong>貢献:</strong> 対応づけのない2話者で、Cycle 一貫性損失と敵対損失により話者変換。</p>
+                <div class="math-block">$L_G = L_{adv} + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$</div>
+                <div class="impl-note warn">当サイトでは簡易スペクトル変換で雰囲気を再現。本格再現は学習済みモデルが必要。</div>
             </div>
             <div class="panel">
-                <h3>🌟 StarGAN-VC</h3>
+                <span class="conf-badge slt">SLT 2018</span> <span class="conf-badge icassp">ICASSP 2019</span>
+                <h3>StarGAN-VC</h3>
                 <div class="paper-ref">
                     <h4>StarGAN-VC: Non-parallel many-to-many voice conversion using star generative adversarial networks</h4>
                     <p><strong>著者:</strong> Hirokazu Kameoka, Takuhiro Kaneko, Kou Tanaka, Nobukatsu Hojo</p>
-                    <p><strong>会議:</strong> SLT 2018, ICASSP 2019</p>
                 </div>
-                <p><strong>何ができるか：</strong> 1つのGeneratorで複数話者間の多対多音声変換。</p>
-                <div class="math-block">$L_G = L_{adv} + \lambda_{cls} L_{cls}^r + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$（ドメイン分類損失含む）</div>
-                <div class="impl-note warn">ここでは話者IDに応じた簡易変換のデモのみ。</div>
+                <p><strong>貢献:</strong> 1つの Generator で多対多変換。ドメイン分類損失で話者を指定。</p>
+                <div class="math-block">$L_G = L_{adv} + \lambda_{cls} L_{cls}^r + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$</div>
+                <div class="impl-note warn">当サイトでは話者IDに応じた簡易デモのみ。</div>
             </div>
             <div class="panel">
-                <h3>🎯 AutoVC</h3>
+                <span class="conf-badge neurips">NeurIPS 2019</span>
+                <h3>AutoVC</h3>
                 <div class="paper-ref">
                     <h4>AutoVC: Zero-shot voice style transfer with only autoencoder loss</h4>
                     <p><strong>著者:</strong> Kaizhi Qian, Yang Zhang, Shiyu Chang, Mark Hasegawa-Johnson</p>
-                    <p><strong>会議:</strong> NeurIPS 2019</p>
                 </div>
-                <p><strong>何ができるか：</strong> ターゲット話者の学習データがなくても、数秒の参照音声でゼロショット音声変換。</p>
-                <div class="math-block">内容 Encoder $E_c$、話者 Encoder $E_s$、Decoder $D$。変換: $\hat{x} = D(E_c(x_{src}), E_s(x_{tgt}))$</div>
-                <div class="impl-note warn">本サイトでは解説のみ。実装は Encoder/Decoder の学習が必要。</div>
+                <p><strong>貢献:</strong> ターゲット話者の学習データなしでゼロショット変換。内容 Encoder と話者 Encoder の分離。</p>
+                <div class="math-block">$\hat{x}_{conv} = D(E_c(x_{src}), E_s(x_{tgt}))$</div>
+                <div class="impl-note warn">当サイトでは解説のみ。実装は Encoder/Decoder の学習が必要。</div>
             </div>
             <div class="panel">
-                <h3>🎵 VITS</h3>
+                <span class="conf-badge icml">ICML 2021</span>
+                <h3>VITS</h3>
                 <div class="paper-ref">
                     <h4>VITS: Conditional variational autoencoder with adversarial learning for end-to-end text-to-speech</h4>
                     <p><strong>著者:</strong> Jaehyeon Kim, Jungil Kong, Juhee Son</p>
-                    <p><strong>会議:</strong> ICML 2021</p>
                 </div>
-                <p><strong>何ができるか：</strong> テキストから自然な音声を end-to-end で合成（TTS）。</p>
-                <div class="math-block">VAE + 敵対学習 + Monotonic Alignment Search。$L = L_{recon} + \lambda_{kl} L_{kl} + \lambda_{adv} L_{adv}$</div>
-                <div class="impl-note warn">ここではTTSはフォルマント合成による簡易デモのみ。VITSそのものの推論は別環境が必要。</div>
+                <p><strong>貢献:</strong> テキストから自然音声を end-to-end で合成。VAE + 敵対学習 + Monotonic Alignment。</p>
+                <div class="math-block">$L = L_{recon} + \lambda_{kl} L_{kl} + \lambda_{adv} L_{adv}$</div>
+                <div class="impl-note warn">当サイトではフォルマント合成による簡易 TTS デモのみ。</div>
             </div>
             <div class="panel">
-                <h3>🌊 WaveNet</h3>
+                <span class="conf-badge nips">NIPS 2016</span>
+                <h3>WaveNet</h3>
                 <div class="paper-ref">
                     <h4>WaveNet: A generative model for raw audio</h4>
-                    <p><strong>著者:</strong> Aaron van den Oord, Sander Dieleman, Heiga Zen, et al.</p>
-                    <p><strong>会議:</strong> NIPS 2016</p>
+                    <p><strong>著者:</strong> Aaron van den Oord, Sander Dieleman, Heiga Zen, et al. (DeepMind)</p>
                 </div>
-                <p><strong>何ができるか：</strong> 生波形を自己回帰で生成。TTS・VCのボコーダとしても利用される。</p>
-                <div class="math-block">Dilated causal convolution、$p(x_t | x_{&lt;t})$ をモデル化。</div>
-                <div class="impl-note warn">解説のみ。推論は重いため本サイトでは未実装。</div>
+                <p><strong>貢献:</strong> 生波形の自己回帰生成。Dilated causal convolution。TTS・VC のボコーダ基盤。</p>
+                <div class="math-block">$p(x_t | x_{&lt;t})$ をモデル化。Dilated causal convolution + gated activation.</div>
+                <div class="impl-note warn">当サイトでは解説のみ。推論は重いため未実装。</div>
             </div>
         </div>
 
-        <!-- 詳細デモ（従来の index のタブ構成へのリンク） -->
+        <!-- 理論・ダイバージェンス（Nielsen: Chord Gap, Jensen, Bregman, Bhattacharyya） -->
+        <div id="divergence" class="tab-content">
+            <div class="panel" style="border-color: var(--accent);">
+                <h3>📐 計算デモ（論文の式をそのまま計算）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 12px;">API（<code>research_api.py</code>）が起動しているとき、以下で Jensen / Bregman / Bhattacharyya / セントロイド / k-means++ を計算できます。</p>
+                <div class="grid2">
+                    <div>
+                        <strong>Jensen ダイバージェンス</strong> — p, q (JSON配列), F: <input type="text" id="d-jensen-p" placeholder="[0,0]" style="width:80px"> <input type="text" id="d-jensen-q" placeholder="[1,1]" style="width:80px">
+                        <select id="d-jensen-f"><option value="squared">squared</option><option value="entropy">entropy</option></select>
+                        <button onclick="calcJensen()">計算</button>
+                        <pre id="out-jensen" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>スキュー Jensen</strong> — p, q, α: <input type="text" id="d-skew-p" placeholder="[0,0]" style="width:70px"> <input type="text" id="d-skew-q" placeholder="[1,1]" style="width:70px"> <input type="number" id="d-skew-a" min="0.01" max="0.99" step="0.1" value="0.5" style="width:50px">
+                        <button onclick="calcSkewJensen()">計算</button>
+                        <pre id="out-skew" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>Bregman</strong> — p, q, F: <input type="text" id="d-bregman-p" placeholder="[1,1]" style="width:70px"> <input type="text" id="d-bregman-q" placeholder="[2,2]" style="width:70px">
+                        <select id="d-bregman-f"><option value="squared">squared</option><option value="entropy">entropy</option></select>
+                        <button onclick="calcBregman()">計算</button>
+                        <pre id="out-bregman" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>Bhattacharyya（ガウス）</strong> — μ1,σ²1, μ2,σ²2: <input type="number" id="d-bhat-m1" value="0" style="width:50px"> <input type="number" id="d-bhat-v1" value="1" style="width:50px"> <input type="number" id="d-bhat-m2" value="1" style="width:50px"> <input type="number" id="d-bhat-v2" value="1" style="width:50px">
+                        <button onclick="calcBhattacharyya()">計算</button>
+                        <pre id="out-bhat" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>Chord gap（二パラメータ）</strong> — p, q, β, γ: <input type="text" id="d-chord-p" placeholder="[0,0]" style="width:60px"> <input type="text" id="d-chord-q" placeholder="[1,1]" style="width:60px"> <input type="number" id="d-chord-beta" value="0.3" min="0.01" max="0.99" step="0.05" style="width:50px"> <input type="number" id="d-chord-gamma" value="0.5" min="0.01" max="0.99" step="0.05" style="width:50px">
+                        <button onclick="calcChordGap()">計算</button>
+                        <pre id="out-chord" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>Jensen–Bregman (JB)</strong> — p, q, α: <input type="text" id="d-jb-p" placeholder="[1,1]" style="width:70px"> <input type="text" id="d-jb-q" placeholder="[2,2]" style="width:70px"> <input type="number" id="d-jb-a" value="0.5" min="0.01" max="0.99" step="0.1" style="width:50px">
+                        <button onclick="calcJB()">計算</button>
+                        <pre id="out-jb" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>セントロイド（重み付き）</strong> — points: <input type="text" id="d-centroid-pts" placeholder="[[0,0],[1,0],[0,1]]" style="width:180px"> α: <input type="number" id="d-centroid-a" value="0.5" min="0.01" max="0.99" step="0.1" style="width:50px">
+                        <button onclick="calcCentroid()">計算</button>
+                        <pre id="out-centroid" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                    <div>
+                        <strong>k-means++ 初期シード</strong> — points: <input type="text" id="d-kmeans-pts" placeholder="[[0,0],[1,1],[2,0],[0,2]]" style="width:160px"> k: <input type="number" id="d-kmeans-k" value="2" min="1" style="width:40px">
+                        <button onclick="calcKmeansPP()">計算</button>
+                        <pre id="out-kmeans" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="panel" style="border-color: var(--accent);">
+                <h3>📐 音声変換の損失式（論文どおり）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">CycleGAN-VC: L_G = L_adv + λ_cyc L_cyc + λ_id L_id。StarGAN-VC: L_G = L_adv + λ_cls L_cls^r + λ_cyc L_cyc + λ_id L_id。API で与えたロジット・再構成誤差から損失を計算します。</p>
+                <div class="grid2">
+                    <div>
+                        <strong>CycleGAN 損失</strong> — fake_logits, real_logits, reconstructed, original (配列), λ_cyc, λ_id<br>
+                        <input type="text" id="loss-fake" placeholder="[0.3,0.4]" style="width:80px"> <input type="text" id="loss-real" placeholder="[0.7,0.8]" style="width:80px"> <input type="text" id="loss-recon" placeholder="[0.1,0.2]" style="width:80px"> <input type="text" id="loss-orig" placeholder="[0.1,0.2]" style="width:80px">
+                        <button onclick="calcCycleGANLoss()">計算</button>
+                        <pre id="out-cyclegan" style="margin-top:6px; font-size:0.85rem; min-height:50px;"></pre>
+                    </div>
+                    <div>
+                        <strong>StarGAN 損失</strong> — fake/real logits, domain_fake/real, λ_cls, λ_cyc, λ_id<br>
+                        <input type="text" id="loss-s-fake" placeholder="[0.4]" style="width:60px"> <input type="text" id="loss-s-real" placeholder="[0.7]" style="width:60px"> <input type="text" id="loss-s-df" placeholder="[0.8]" style="width:60px"> <input type="text" id="loss-s-dr" placeholder="[0.9]" style="width:60px">
+                        <button onclick="calcStarGANLoss()">計算</button>
+                        <pre id="out-stargan" style="margin-top:6px; font-size:0.85rem; min-height:50px;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>距離・ダイバージェンスの役割</h3>
+                <p style="color: var(--text-muted); margin-bottom: 12px;">音声・信号処理・機械学習では、分布やパラメータ間の「距離」$D(\cdot, \cdot)$ の選び方が重要です。パラメトリックな族 $D_\alpha(\cdot, \cdot)$ や、凸不等式のギャップから導かれるダイバージェンスが、クラスタリング・情報幾何・学習に使われます。以下は Frank Nielsen の Chord Gap / Jensen / Bregman / Bhattacharyya に関する理論の要約です。</p>
+            </div>
+            <div class="panel">
+                <h3>1. Jensen 不等式と Jensen ダイバージェンス（Burbea–Rao）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 10px;">$F$ を狭義凸関数とするとき、Jensen の不等式より</p>
+                <div class="math-block">$$F\!\left(\frac{p+q}{2}\right) \leq \frac{F(p)+F(q)}{2}.$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">この不等式のギャップが Jensen ダイバージェンス（Burbea–Rao）。論文では Index terms: Jensen/Burbea–Rao divergence, Bregman divergence, centroid, k-means++。</p>
+                <div class="math-block">$$J_F(p,q) = \frac{F(p)+F(q)}{2} - F\!\left(\frac{p+q}{2}\right) \geq 0.$$</div>
+            </div>
+            <div class="panel">
+                <h3>2. スキュー Jensen ダイバージェンス（パラメータ $\alpha \in (0,1)$）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">重み付き平均 $(1-\alpha)p + \alpha q$ に対する凸不等式のギャップで、パラメトリック族を定義する:</p>
+                <div class="math-block">$$J_F^\alpha(p : q) = (1-\alpha)F(p) + \alpha F(q) - F\bigl((1-\alpha)p + \alpha q\bigr).$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">別表記（$(pq)_\lambda := (1-\lambda)p + \lambda q$ として）:</p>
+                <div class="math-block">$$J_F^\alpha(p : q) = (F(p)\,F(q))_\alpha - F((pq)_\alpha), \quad \text{一般に非対称 } J_F^\alpha(p:q) \neq J_F^\alpha(q:p).$$</div>
+            </div>
+            <div class="panel">
+                <h3>3. Bregman ダイバージェンスと極限</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">$F$ が狭義凸かつ微分可能なとき、Bregman ダイバージェンスは</p>
+                <div class="math-block">$$B_F(p : q) = F(p) - F(q) - (p-q)^\top \nabla F(q).$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">スキュー Jensen のスケール版 $sJ_F^\alpha(p:q) = \frac{1}{1-\alpha} J_F^\alpha(p:q)$ は、$\alpha \to 0^+$ または $\alpha \to 1^-$ で Bregman を極限として含む。Taylor–Lagrange 形（中間点 $\xi \in [p,q]$）:</p>
+                <div class="math-block">$$B_F(p|q) = \frac{1}{2}(p-q)^\top \nabla^2 F(\xi)\,(p-q).$$</div>
+            </div>
+            <div class="panel">
+                <h3>4. 統計的距離：Bhattacharyya と KL</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">分布 $p(x), q(x)$ に対するスキュー Bhattacharyya 距離と Kullback–Leibler:</p>
+                <div class="math-block">$$\mathrm{Bhat}_\alpha(p : q) = -\log \int p(x)^{1-\alpha} q(x)^\alpha \,dx, \qquad \mathrm{KL}(p:q) = \int p(x) \log \frac{p(x)}{q(x)}\,dx.$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">指数族 $p(x;\theta) = \exp(\theta^\top x - F(\theta))$ では、パラメータ空間上で $\mathrm{Bhat}(p(\cdot;\theta_1) : p(\cdot;\theta_2)) = J_F^\alpha(\theta_1 : \theta_2)$ と一致し、$\mathrm{KL}$ は Bregman に対応する（Fig. 1 の対応）。</p>
+            </div>
+            <div class="panel">
+                <h3>5. Chord Gap ダイバージェンス（三パラメータ族）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">Nielsen は「上弦」と「下弦」の垂直ギャップとして chord gap ダイバージェンス $J_F^{\alpha,\beta,\gamma}(p:q)$ を導入し、スキュー Jensen と統計的 Bhattacharyya を一般化する。二つのスキュー Jensen の差として:</p>
+                <div class="math-block">$$J_F^{\beta,\gamma}(p:q) = J_F^\alpha(p:q) - J_F^\alpha((pq)_\alpha : (pq)_s), \quad \lambda = \lambda(\alpha,\beta,\gamma).$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">一般化 Bhattacharyya 距離（指数族のパラメータ $\theta_p, \theta_q$）は三パラメータ族 $\mathrm{Bhat}_{\alpha,\beta,\gamma}(\theta_p : \theta_q)$ として定義され、$\alpha=\beta$ のとき従来のスキュー Bhattacharyya に帰着する。</p>
+            </div>
+            <div class="panel">
+                <h3>6. セントロイドと k-means++</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">重み付き点集合 $P = \{(w_i, p_i)\}$ に対する chord gap セントロイドは、$A(x)-B(x)$（$A,B$ は狭義凸）の最小化となり、反復的 concave–convex procedure (CCCP) で解く:</p>
+                <div class="math-block">$$\nabla A(x_{t+1}) = \nabla B(x_t), \qquad x_{t+1} = (\nabla A)^{-1}(\nabla B(x_t)).$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">$\alpha=\beta=\gamma$ のとき、スキュー Jensen セントロイドの更新は $x_{t+1} = \nabla F^{-1}\bigl(\sum_i w_i \nabla F((p_i x_t)_\alpha)\bigr)$。k-means++ の競合比は、ダイバージェンスが $U$-三角不等式 $D(x:z) \leq U(D(x:y)+D(y:z))$ を満たすとき $O(\log k)$ の保証を持つ。</p>
+            </div>
+            <div class="panel">
+                <h3>7. Skew Jensen–Bregman (JB) と Taylor–Lagrange 形</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">スキュー Jensen–Bregman ダイバージェンスは二つの Bregman の重み付き和:</p>
+                <div class="math-block">$$\mathrm{JB}_F^\alpha(p|q) = (1-\alpha) B_F(p : (pq)_\alpha) + \alpha B_F(q : (pq)_\alpha).$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">スキュー Jensen の Taylor–Lagrange 形（中間点 $\xi_1, \xi_2$）は $H_\alpha^{p|q}$ を用いて $J_F^\alpha(p|q)$ と結びつき、三パラメータ chord gap の Taylor–Lagrange 形 $H_{\alpha,\beta,\gamma}^{p|q}$ は $\nabla^2 F(\xi'), \nabla^2 F(\xi'')$ で表される。有限点集合 $P$ 上で比 $\rho = \sup/\inf$ が有限なら、k-means++ の解析に利用できる。</p>
+            </div>
+            <div class="panel">
+                <h3>8. 実装した式の一覧（論文どおり）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">本サイトの API で計算している式:</p>
+                <ul style="color: var(--text-muted); padding-left: 20px; line-height: 2;">
+                    <li><strong>Jensen</strong> — $J_F(p,q) = \frac{F(p)+F(q)}{2} - F((p+q)/2)$（F: squared / entropy）</li>
+                    <li><strong>スキュー Jensen</strong> — $J_F^\alpha(p:q) = (1-\alpha)F(p) + \alpha F(q) - F((1-\alpha)p + \alpha q)$</li>
+                    <li><strong>Bregman</strong> — $B_F(p:q) = F(p) - F(q) - (p-q)^\top \nabla F(q)$</li>
+                    <li><strong>Skew Jensen–Bregman</strong> — $\mathrm{JB}_F^\alpha(p|q) = (1-\alpha)B_F(p:(pq)_\alpha) + \alpha B_F(q:(pq)_\alpha)$</li>
+                    <li><strong>Bhattacharyya</strong> — ガウス同士の閉形式、離散分布の $-\log \sum\sqrt{p_i q_i}$</li>
+                    <li><strong>Chord gap</strong> — 二パラメータ族 $J_F^{\beta,\gamma}(p:q)$（上記計算デモの API で計算可能）</li>
+                    <li><strong>セントロイド</strong> — 重み付きスキュー Jensen セントロイド（F=squared は閉形式で重み付き平均）</li>
+                    <li><strong>k-means++</strong> — ダイバージェンスに基づく $D^2$ 重み付き確率サンプリングで初期シードを生成</li>
+                    <li><strong>CycleGAN-VC 損失</strong> — $L_G = L_{adv} + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$</li>
+                    <li><strong>StarGAN-VC 損失</strong> — $L_G = L_{adv} + \lambda_{cls} L_{cls}^r + \lambda_{cyc} L_{cyc} + \lambda_{id} L_{id}$</li>
+                </ul>
+            </div>
+            <div class="panel paper-ref">
+                <h4>参考文献</h4>
+                <p><strong>Frank Nielsen</strong>, "The chord gap divergence and a generalization of the Bhattacharyya distance," École Polytechnique &amp; Sony CSL. Index terms: Jensen/Burbea–Rao divergence, Bregman divergence, centroid, k-means++. 再現用コード: <a href="https://www.lix.polytechnique.fr/~nielsen/CGD/" target="_blank" rel="noopener" style="color: var(--accent);">lix.polytechnique.fr/~nielsen/CGD/</a></p>
+            </div>
+        </div>
+
         <div id="advanced" class="tab-content">
             <div class="panel">
                 <h3>詳細デモページ</h3>
-                <p style="margin-bottom:12px;">各手法の数式・パラメータ・簡易デモをまとめた詳細ページです。</p>
+                <p style="margin-bottom:12px;">各手法の数式・パラメータ・簡易デモをまとめたページです。</p>
                 <a href="research.html" style="color: var(--accent); font-weight: 600;">research.html を開く →</a>
             </div>
         </div>
+
+        <footer class="footer-ack">
+            <p><strong>謝辞</strong> — 本プラットフォームは以下の国際会議論文と著者に基づいています。</p>
+            <p style="margin-top:8px;">WaveNet (NIPS 2016) · CycleGAN-VC (EUSIPCO 2018, ICASSP 2019) · StarGAN-VC (SLT 2018, ICASSP 2019) · AutoVC (NeurIPS 2019) · VITS (ICML 2021)</p>
+        </footer>
     </div>
 
     <script>
@@ -387,203 +514,178 @@
             voice:    isLocal ? 'http://localhost:5000/api/voice/convert'        : '/.netlify/functions/voice_convert',
             health:   isLocal ? 'http://localhost:5000/api/health'              : '/.netlify/functions/api_health'
         };
-
         function apiErrorDetail(url, status, err) {
             var msg = '接続できませんでした: ' + (url || 'API') + (status ? ' (' + status + ')' : '');
             if (isNetlify && (status === 404 || status === 502 || status === 503)) {
-                msg += '\n\nNetlify Functions がデプロイされていないか、ビルドに失敗している可能性があります。\n' +
-                    '・GitHub へ push 済みか\n・Netlify の「Functions」タブに formant_synthesize / f0_analyze / voice_convert が表示されているか\n' +
-                    '・Deploys → Build log でエラーがないか\nをご確認ください。';
-            } else if (isLocal) {
-                msg += '\n\nresearch_api.py を起動していますか？ (python research_api.py)';
-            } else if (status !== 404) {
-                msg += '\n\nしばらく待ってから再試行してください。（コールドスタートで数秒かかることがあります）';
-            }
+                msg += '\n\nNetlify Functions のデプロイ・ビルドログをご確認ください。';
+            } else if (isLocal) { msg += '\n\nresearch_api.py を起動していますか？ (python research_api.py)'; }
+            else if (status !== 404) { msg += '\n\nしばらく待ってから再試行してください。'; }
             return msg + (err ? '\n\n' + err : '');
         }
-
         (function checkApiAvailable() {
             if (!isNetlify) return;
             var banner = document.getElementById('api-unavailable-banner');
-            fetch(API.health, { method: 'GET', cache: 'no-store' })
-                .then(function(r) {
-                    if (!r.ok) {
-                        banner.classList.add('show');
-                    }
-                })
-                .catch(function() {
-                    banner.classList.add('show');
-                });
+            fetch(API.health, { method: 'GET', cache: 'no-store' }).then(function(r) { if (!r.ok) banner.classList.add('show'); }).catch(function() { banner.classList.add('show'); });
         })();
-
         function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if (el) el.classList.add('active');
+            if (window.MathJax && id === 'divergence') window.MathJax.typesetPromise && window.MathJax.typesetPromise().catch(function() {});
         }
-
-        // ----- スペクトルデモ（ブラウザ内） -----
+        var API_BASE_FULL = isLocal ? 'http://localhost:5000' : '';
+        function parseJson(id, def) { try { return JSON.parse(document.getElementById(id).value || def); } catch (e) { return def; } }
+        function divergenceApi(action, body) {
+            var url = isLocal ? API_BASE_FULL + '/api/divergence/' + action : '/.netlify/functions/divergence';
+            var payload = isLocal ? body : Object.assign({ action: action }, body);
+            return { url: url, body: payload };
+        }
+        function voiceLossApi(action, body) {
+            var url = isLocal ? API_BASE_FULL + '/api/voice/' + action : '/.netlify/functions/voice_loss';
+            var payload = isLocal ? body : Object.assign({ action: action }, body);
+            return { url: url, body: payload };
+        }
+        function calcJensen() {
+            var p = parseJson('d-jensen-p', '[0,0]'), q = parseJson('d-jensen-q', '[1,1]'), F = document.getElementById('d-jensen-f').value;
+            var api = divergenceApi('jensen', { p: p, q: q, F: F });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-jensen').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-jensen').textContent = 'Error: ' + e.message; });
+        }
+        function calcSkewJensen() {
+            var p = parseJson('d-skew-p', '[0,0]'), q = parseJson('d-skew-q', '[1,1]'), alpha = parseFloat(document.getElementById('d-skew-a').value);
+            var api = divergenceApi('skew_jensen', { p: p, q: q, alpha: alpha, F: 'squared' });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-skew').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-skew').textContent = 'Error: ' + e.message; });
+        }
+        function calcBregman() {
+            var p = parseJson('d-bregman-p', '[1,1]'), q = parseJson('d-bregman-q', '[2,2]'), F = document.getElementById('d-bregman-f').value;
+            var api = divergenceApi('bregman', { p: p, q: q, F: F });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-bregman').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-bregman').textContent = 'Error: ' + e.message; });
+        }
+        function calcBhattacharyya() {
+            var m1 = parseFloat(document.getElementById('d-bhat-m1').value), v1 = parseFloat(document.getElementById('d-bhat-v1').value), m2 = parseFloat(document.getElementById('d-bhat-m2').value), v2 = parseFloat(document.getElementById('d-bhat-v2').value);
+            var api = divergenceApi('bhattacharyya', { mean1: m1, var1: v1, mean2: m2, var2: v2 });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-bhat').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-bhat').textContent = 'Error: ' + e.message; });
+        }
+        function calcChordGap() {
+            var p = parseJson('d-chord-p', '[0,0]'), q = parseJson('d-chord-q', '[1,1]'), beta = parseFloat(document.getElementById('d-chord-beta').value), gamma = parseFloat(document.getElementById('d-chord-gamma').value);
+            var api = divergenceApi('chord_gap', { p: p, q: q, beta: beta, gamma: gamma, F: 'squared' });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-chord').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-chord').textContent = 'Error: ' + e.message; });
+        }
+        function calcJB() {
+            var p = parseJson('d-jb-p', '[1,1]'), q = parseJson('d-jb-q', '[2,2]'), alpha = parseFloat(document.getElementById('d-jb-a').value);
+            var api = divergenceApi('jensen_bregman', { p: p, q: q, alpha: alpha, F: 'squared' });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-jb').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-jb').textContent = 'Error: ' + e.message; });
+        }
+        function calcCentroid() {
+            var points = parseJson('d-centroid-pts', '[[0,0],[1,0],[0,1]]'), alpha = parseFloat(document.getElementById('d-centroid-a').value);
+            var w = Array(points.length).fill(1.0 / points.length);
+            var api = divergenceApi('centroid', { points: points, weights: w, alpha: alpha, F: 'squared' });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-centroid').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-centroid').textContent = 'Error: ' + e.message; });
+        }
+        function calcKmeansPP() {
+            var points = parseJson('d-kmeans-pts', '[[0,0],[1,1],[2,0],[0,2]]'), k = parseInt(document.getElementById('d-kmeans-k').value, 10);
+            var api = divergenceApi('kmeans_pp', { points: points, k: k, alpha: 0.5 });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-kmeans').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-kmeans').textContent = 'Error: ' + e.message; });
+        }
+        function calcCycleGANLoss() {
+            var fake = parseJson('loss-fake', '[0.3,0.4]'), real = parseJson('loss-real', '[0.7,0.8]'), recon = parseJson('loss-recon', '[0.1,0.2]'), orig = parseJson('loss-orig', '[0.1,0.2]');
+            var api = voiceLossApi('cyclegan_loss', { fake_logits: fake, real_logits: real, reconstructed: recon, original: orig, lambda_cyc: 10, lambda_id: 5 });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-cyclegan').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-cyclegan').textContent = 'Error: ' + e.message; });
+        }
+        function calcStarGANLoss() {
+            var fake = parseJson('loss-s-fake', '[0.4]'), real = parseJson('loss-s-real', '[0.7]'), df = parseJson('loss-s-df', '[0.8]'), dr = parseJson('loss-s-dr', '[0.9]');
+            var api = voiceLossApi('stargan_loss', { fake_logits: fake, real_logits: real, domain_logits_fake: df, domain_logits_real: dr });
+            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
+                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-stargan').textContent = JSON.stringify(j, null, 2); })
+                .catch(function(e) { document.getElementById('out-stargan').textContent = 'Error: ' + e.message; });
+        }
         let demoAudioBuffer = null;
         document.getElementById('demo-spectrum-file').onchange = async function(e) {
-            const f = e.target.files[0];
-            if (!f) return;
-            const url = URL.createObjectURL(f);
+            var f = e.target.files[0]; if (!f) return;
+            var url = URL.createObjectURL(f);
             document.getElementById('demo-audio').src = url;
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const ab = await fetch(url).then(r => r.arrayBuffer());
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var ab = await fetch(url).then(r => r.arrayBuffer());
             demoAudioBuffer = await ctx.decodeAudioData(ab);
             drawWaveform(demoAudioBuffer, 'demo-waveform');
             drawSpectrogramSimple(demoAudioBuffer, 'demo-spectrogram');
             URL.revokeObjectURL(url);
         };
         function drawWaveform(buffer, canvasId) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas || !buffer) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width = canvas.offsetWidth;
-            const h = canvas.height;
-            const ch = buffer.getChannelData(0);
-            const step = Math.floor(ch.length / w);
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, w, h);
-            ctx.strokeStyle = '#3b82f6';
-            ctx.beginPath();
-            for (let x = 0; x < w; x++) {
-                const i = Math.min(x * step, ch.length - 1);
-                const y = (1 - ch[i]) / 2 * h;
-                if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            }
+            var canvas = document.getElementById(canvasId); if (!canvas || !buffer) return;
+            var ctx = canvas.getContext('2d'), w = canvas.width = canvas.offsetWidth, h = canvas.height;
+            var ch = buffer.getChannelData(0), step = Math.floor(ch.length / w);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = '#3b82f6'; ctx.beginPath();
+            for (var x = 0; x < w; x++) { var i = Math.min(x * step, ch.length - 1), y = (1 - ch[i]) / 2 * h; if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
             ctx.stroke();
         }
         function drawSpectrogramSimple(buffer, canvasId) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas || !buffer) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width = canvas.offsetWidth;
-            const h = canvas.height;
-            const ch = buffer.getChannelData(0);
-            const sr = buffer.sampleRate;
-            const fftSize = 1024;
-            const hop = fftSize / 2;
-            const win = new Float32Array(fftSize);
-            for (let i = 0; i < fftSize; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftSize - 1));
-            const nFrames = Math.floor((ch.length - fftSize) / hop) + 1;
-            const outW = Math.min(nFrames, Math.max(w, 400));
-            const outH = Math.min(Math.floor(fftSize / 2), h || 200);
-            const mag = new Float32Array(outW * outH);
-            for (let fi = 0; fi < outW; fi++) {
-                const start = fi * hop;
-                const re = new Float32Array(fftSize);
-                const im = new Float32Array(fftSize);
-                for (let i = 0; i < fftSize; i++) {
-                    const v = ch[start + i] * win[i];
-                    re[i] = v; im[i] = 0;
-                }
+            var canvas = document.getElementById(canvasId); if (!canvas || !buffer) return;
+            var ctx = canvas.getContext('2d'), w = canvas.width = canvas.offsetWidth, h = canvas.height;
+            var ch = buffer.getChannelData(0), sr = buffer.sampleRate, fftSize = 1024, hop = fftSize / 2;
+            var win = new Float32Array(fftSize); for (var i = 0; i < fftSize; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftSize - 1));
+            var nFrames = Math.floor((ch.length - fftSize) / hop) + 1, outW = Math.min(nFrames, Math.max(w, 400)), outH = Math.min(Math.floor(fftSize / 2), h || 200);
+            var mag = new Float32Array(outW * outH);
+            for (var fi = 0; fi < outW; fi++) {
+                var start = fi * hop, re = new Float32Array(fftSize), im = new Float32Array(fftSize);
+                for (var i = 0; i < fftSize; i++) { re[i] = ch[start + i] * win[i]; im[i] = 0; }
                 fft(re, im);
-                for (let k = 0; k < outH; k++) {
-                    const idx = fi + k * outW;
-                    mag[idx] = Math.sqrt(re[k] * re[k] + im[k] * im[k]);
-                }
+                for (var k = 0; k < outH; k++) mag[fi + k * outW] = Math.sqrt(re[k] * re[k] + im[k] * im[k]);
             }
-            let max = 0;
-            for (let i = 0; i < mag.length; i++) if (mag[i] > max) max = mag[i];
-            const img = ctx.createImageData(outW, outH);
-            for (let y = 0; y < outH; y++) {
-                for (let x = 0; x < outW; x++) {
-                    const v = Math.min(1, mag[x + y * outW] / (max || 1));
-                    const i = (y * outW + x) * 4;
-                    img.data[i] = v * 255;
-                    img.data[i+1] = v * 100;
-                    img.data[i+2] = 200;
-                    img.data[i+3] = 255;
-                }
+            var max = 0; for (var i = 0; i < mag.length; i++) if (mag[i] > max) max = mag[i];
+            var img = ctx.createImageData(outW, outH);
+            for (var y = 0; y < outH; y++) for (var x = 0; x < outW; x++) {
+                var v = Math.min(1, mag[x + y * outW] / (max || 1)), i = (y * outW + x) * 4;
+                img.data[i] = v * 255; img.data[i+1] = v * 100; img.data[i+2] = 200; img.data[i+3] = 255;
             }
-            canvas.width = outW;
-            canvas.height = outH;
-            ctx.putImageData(img, 0, 0);
+            canvas.width = outW; canvas.height = outH; ctx.putImageData(img, 0, 0);
         }
-        function fft(re, im) {
-            const n = re.length;
-            for (let k = 0; k < n; k++) {
-                let sr = 0, si = 0;
-                for (let t = 0; t < n; t++) {
-                    const angle = -2 * Math.PI * k * t / n;
-                    sr += re[t] * Math.cos(angle) - im[t] * Math.sin(angle);
-                    si += re[t] * Math.sin(angle) + im[t] * Math.cos(angle);
-                }
-                re[k] = sr; im[k] = si;
-            }
-        }
-        function demoSpectrum() {
-            const el = document.getElementById('demo-spectrum-file');
-            if (el.files.length === 0) { alert('ファイルを選んでください'); return; }
-            el.dispatchEvent(new Event('change'));
-        }
-
-        // ----- フォルマント合成（API） -----
-        document.getElementById('formant-f0').oninput = function() {
-            document.getElementById('formant-f0-val').textContent = this.value;
-        };
+        function fft(re, im) { var n = re.length; for (var k = 0; k < n; k++) { var sr = 0, si = 0; for (var t = 0; t < n; t++) { var angle = -2 * Math.PI * k * t / n; sr += re[t] * Math.cos(angle) - im[t] * Math.sin(angle); si += re[t] * Math.sin(angle) + im[t] * Math.cos(angle); } re[k] = sr; im[k] = si; } }
+        function demoSpectrum() { var el = document.getElementById('demo-spectrum-file'); if (el.files.length === 0) { alert('ファイルを選んでください'); return; } el.dispatchEvent(new Event('change')); }
+        document.getElementById('formant-f0').oninput = function() { document.getElementById('formant-f0-val').textContent = this.value; };
         async function demoFormant() {
-            const f0 = document.getElementById('formant-f0').value;
             try {
-                const res = await fetch(API.formant, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ f0: parseInt(f0, 10), duration: 1.0 })
-                });
-                if (!res.ok) {
-                    throw new Error(apiErrorDetail(API.formant, res.status, null));
-                }
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                document.getElementById('formant-audio').src = url;
-            } catch (e) {
-                alert(e.message.indexOf('接続できませんでした') >= 0 ? e.message : apiErrorDetail(API.formant, null, e.message));
-            }
+                var res = await fetch(API.formant, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ f0: parseInt(document.getElementById('formant-f0').value, 10), duration: 1.0 }) });
+                if (!res.ok) throw new Error(apiErrorDetail(API.formant, res.status, null));
+                var blob = await res.blob(); document.getElementById('formant-audio').src = URL.createObjectURL(blob);
+            } catch (e) { alert(e.message.indexOf('接続できませんでした') >= 0 ? e.message : apiErrorDetail(API.formant, null, e.message)); }
         }
-
-        // ----- F0分析（API） -----
         async function demoF0() {
-            const fileInput = document.getElementById('demo-f0-file');
-            if (!fileInput.files[0]) { alert('ファイルを選んでください'); return; }
-            const fd = new FormData();
-            fd.append('audio', fileInput.files[0]);
+            var fileInput = document.getElementById('demo-f0-file'); if (!fileInput.files[0]) { alert('ファイルを選んでください'); return; }
+            var fd = new FormData(); fd.append('audio', fileInput.files[0]);
             try {
-                const res = await fetch(API.f0, { method: 'POST', body: fd });
-                if (!res.ok) {
-                    var msg = apiErrorDetail(API.f0, res.status, null);
-                    document.getElementById('f0-result').textContent = msg;
-                    return;
-                }
-                const j = await res.json();
-                document.getElementById('f0-result').textContent = JSON.stringify(j, null, 2);
-            } catch (e) {
-                var status = (e.message && e.message.match(/\d{3}/)) ? e.message.match(/\d{3}/)[0] : null;
-                document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, status, e.message);
-            }
+                var res = await fetch(API.f0, { method: 'POST', body: fd });
+                if (!res.ok) { document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, res.status, null); return; }
+                var j = await res.json(); document.getElementById('f0-result').textContent = JSON.stringify(j, null, 2);
+            } catch (e) { document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, (e.message && e.message.match(/\d{3}/)) ? e.message.match(/\d{3}/)[0] : null, e.message); }
         }
-
-        // ----- 簡易音声変換（API） -----
         async function demoSimpleVC() {
-            const fileInput = document.getElementById('demo-vc-file');
-            if (!fileInput.files[0]) { alert('ファイルを選んでください'); return; }
-            const strength = document.getElementById('demo-vc-strength').value / 100;
-            const fd = new FormData();
-            fd.append('audio', fileInput.files[0]);
-            fd.append('type', 'pitch');
-            fd.append('strength', (strength * 100).toString());
+            var fileInput = document.getElementById('demo-vc-file'); if (!fileInput.files[0]) { alert('ファイルを選んでください'); return; }
+            var fd = new FormData(); fd.append('audio', fileInput.files[0]); fd.append('type', 'pitch'); fd.append('strength', document.getElementById('demo-vc-strength').value);
             try {
-                const res = await fetch(API.voice, { method: 'POST', body: fd });
-                if (!res.ok) {
-                    throw new Error(apiErrorDetail(API.voice, res.status, null));
-                }
-                const blob = await res.blob();
-                document.getElementById('vc-output').src = URL.createObjectURL(blob);
-            } catch (e) {
-                alert(e.message.indexOf('接続できませんでした') >= 0 ? e.message : apiErrorDetail(API.voice, null, e.message));
-            }
+                var res = await fetch(API.voice, { method: 'POST', body: fd });
+                if (!res.ok) throw new Error(apiErrorDetail(API.voice, res.status, null));
+                document.getElementById('vc-output').src = URL.createObjectURL(await res.blob());
+            } catch (e) { alert(e.message.indexOf('接続できませんでした') >= 0 ? e.message : apiErrorDetail(API.voice, null, e.message)); }
         }
     </script>
 </body>

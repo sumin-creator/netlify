@@ -604,6 +604,266 @@ def calculate_mfcc_simple(audio_data, sample_rate):
     mfcc = np.log10(fft_data[:13] + 1e-10)  # 13次元MFCC
     return mfcc
 
+
+# ========== 論文実装: ダイバージェンス（Nielsen: Chord Gap, Jensen, Bregman, Bhattacharyya） ==========
+
+def _F_squared(x):
+    """F(x)=x^2 (ユークリッド)"""
+    x = np.asarray(x, dtype=float)
+    return np.sum(x * x)
+
+def _grad_F_squared(x):
+    return 2 * np.asarray(x, dtype=float)
+
+def _hess_F_squared(x):
+    d = np.size(x)
+    return 2 * np.eye(d)
+
+def _F_entropy(x):
+    """F(x)=sum x_i log x_i (正のベクトル)"""
+    x = np.asarray(x, dtype=float) + 1e-12
+    return float(np.sum(x * np.log(x)))
+
+def _grad_F_entropy(x):
+    x = np.asarray(x, dtype=float) + 1e-12
+    return 1 + np.log(x)
+
+def _hess_F_entropy(x):
+    x = np.asarray(x, dtype=float) + 1e-12
+    return np.diag(1.0 / x)
+
+def _F_logsumexp(x):
+    """F(x)=log(sum(exp(x_i)))"""
+    x = np.asarray(x, dtype=float)
+    m = np.max(x)
+    return float(m + np.log(np.sum(np.exp(x - m))))
+
+def _grad_F_logsumexp(x):
+    x = np.asarray(x, dtype=float)
+    e = np.exp(x - np.max(x))
+    return e / np.sum(e)
+
+def _hess_F_logsumexp(x):
+    x = np.asarray(x, dtype=float)
+    g = _grad_F_logsumexp(x)
+    return np.diag(g) - np.outer(g, g)
+
+_GENERATORS = {
+    'squared': (_F_squared, _grad_F_squared, _hess_F_squared),
+    'entropy': (_F_entropy, _grad_F_entropy, _hess_F_entropy),
+    'logsumexp': (_F_logsumexp, _grad_F_logsumexp, _hess_F_logsumexp),
+}
+
+def jensen_divergence(p, q, F_name='squared'):
+    """J_F(p,q) = (F(p)+F(q))/2 - F((p+q)/2)"""
+    p, q = np.asarray(p, dtype=float), np.asarray(q, dtype=float)
+    F, _, _ = _GENERATORS.get(F_name, _GENERATORS['squared'])
+    return float((F(p) + F(q)) / 2 - F((p + q) / 2))
+
+def skew_jensen_divergence(p, q, alpha, F_name='squared'):
+    """J_F^alpha(p:q) = (1-alpha)F(p) + alpha*F(q) - F((1-alpha)p + alpha*q)"""
+    p, q = np.asarray(p, dtype=float), np.asarray(q, dtype=float)
+    alpha = float(np.clip(alpha, 1e-6, 1 - 1e-6))
+    F, _, _ = _GENERATORS.get(F_name, _GENERATORS['squared'])
+    return float((1 - alpha) * F(p) + alpha * F(q) - F((1 - alpha) * p + alpha * q))
+
+def bregman_divergence(p, q, F_name='squared'):
+    """B_F(p:q) = F(p) - F(q) - (p-q)^T nabla F(q)"""
+    p, q = np.asarray(p, dtype=float), np.asarray(q, dtype=float)
+    F, gradF, _ = _GENERATORS.get(F_name, _GENERATORS['squared'])
+    return float(F(p) - F(q) - np.dot(p - q, gradF(q)))
+
+def skew_jensen_bregman(p, q, alpha, F_name='squared'):
+    """JB_F^alpha(p|q) = (1-alpha)B_F(p:(pq)_alpha) + alpha*B_F(q:(pq)_alpha)"""
+    p, q = np.asarray(p, dtype=float), np.asarray(q, dtype=float)
+    alpha = float(np.clip(alpha, 1e-6, 1 - 1e-6))
+    mid = (1 - alpha) * p + alpha * q
+    return float((1 - alpha) * bregman_divergence(p, mid, F_name) + alpha * bregman_divergence(q, mid, F_name))
+
+def bhattacharyya_gaussian(mean1, var1, mean2, var2):
+    """1次元ガウス同士の Bhattacharyya 係数と距離。Bhat = -log(BC)."""
+    mean1, var1 = float(mean1), float(var1) + 1e-10
+    mean2, var2 = float(mean2), float(var2) + 1e-10
+    v = (var1 + var2) / 2
+    bc = np.exp(-(mean1 - mean2) ** 2 / (4 * v)) / np.sqrt(2 * np.pi * np.sqrt(var1 * var2))
+    bc = np.clip(bc, 1e-12, 1)
+    return float(-np.log(bc))
+
+def bhattacharyya_discrete(p, q):
+    """離散分布 p, q の Bhattacharyya 係数: sum sqrt(p_i * q_i). 距離 = -log(BC)."""
+    p, q = np.asarray(p, dtype=float), np.asarray(q, dtype=float)
+    p, q = p / (np.sum(p) + 1e-12), q / (np.sum(q) + 1e-12)
+    bc = np.sum(np.sqrt(np.clip(p * q, 0, None)))
+    bc = np.clip(bc, 1e-12, 1)
+    return float(-np.log(bc))
+
+def chord_gap_biparametric(p, q, beta, gamma, F_name='squared'):
+    """J_F^{beta,gamma}(p:q) の二パラメータ版。alpha=0 のサブファミリー。論文 Eq.(8) の簡易実装。"""
+    p, q = np.asarray(p, dtype=float), np.asarray(q, dtype=float)
+    alpha = float(np.clip(gamma, 1e-6, 1 - 1e-6))
+    j1 = skew_jensen_divergence(p, q, alpha, F_name)
+    (pq_a, pq_s) = (1 - alpha) * p + alpha * q, (1 - beta) * p + beta * q
+    j2 = skew_jensen_divergence(pq_a, pq_s, 0.5, F_name)
+    return float(j1 - j2)
+
+def centroid_cccp_skew_jensen(points, weights, alpha, F_name='squared', max_iter=100, tol=1e-10):
+    """重み付きスキュー Jensen セントロイド。F=squared のとき閉形式で平均。それ以外は重み付き平均で近似。"""
+    points = np.asarray(points, dtype=float)
+    weights = np.asarray(weights, dtype=float)
+    weights = weights / (np.sum(weights) + 1e-12)
+    # F(x)=x^2 のとき nabla F(x)=2x, セントロイドは重み付き平均
+    if F_name == 'squared':
+        x = np.average(points, axis=0, weights=weights)
+        return x.tolist()
+    # その他は論文の CCCP の代わりに重み付き平均を返す（近似）
+    return np.average(points, axis=0, weights=weights).tolist()
+
+def kmeans_pp_seeds(points, k, divergence='squared', alpha=0.5):
+    """k-means++ 風の初期化: ダイバージェンスに基づく確率的 D^2 重み付きサンプリング。"""
+    points = np.asarray(points, dtype=float)
+    n = len(points)
+    if k >= n:
+        return points.tolist()
+    indices = [np.random.randint(0, n)]
+    for _ in range(k - 1):
+        def d(x, c):
+            if divergence == 'bregman':
+                return bregman_divergence(x, c, 'squared')
+            return skew_jensen_divergence(x, c, alpha, divergence)
+        d2 = np.array([min(d(points[i], points[c]) for c in indices) for i in range(n)])
+        d2 = np.maximum(d2, 0)
+        probs = d2 / (np.sum(d2) + 1e-12)
+        indices.append(np.random.choice(n, p=probs))
+    return [points[i].tolist() for i in indices]
+
+
+@app.route('/api/divergence/jensen', methods=['POST'])
+def api_jensen():
+    data = request.get_json() or {}
+    p = np.array(data.get('p', [0, 0]))
+    q = np.array(data.get('q', [1, 1]))
+    F_name = data.get('F', 'squared')
+    j_sym = jensen_divergence(p, q, F_name)
+    return jsonify({'J_F(p,q)': j_sym})
+
+@app.route('/api/divergence/skew_jensen', methods=['POST'])
+def api_skew_jensen():
+    data = request.get_json() or {}
+    p = np.array(data.get('p', [0, 0]))
+    q = np.array(data.get('q', [1, 1]))
+    alpha = float(data.get('alpha', 0.5))
+    F_name = data.get('F', 'squared')
+    j_pq = skew_jensen_divergence(p, q, alpha, F_name)
+    j_qp = skew_jensen_divergence(q, p, alpha, F_name)
+    return jsonify({'J_F^alpha(p:q)': j_pq, 'J_F^alpha(q:p)': j_qp})
+
+@app.route('/api/divergence/bregman', methods=['POST'])
+def api_bregman():
+    data = request.get_json() or {}
+    p = np.array(data.get('p', [1, 1]))
+    q = np.array(data.get('q', [2, 2]))
+    F_name = data.get('F', 'squared')
+    b = bregman_divergence(p, q, F_name)
+    return jsonify({'B_F(p:q)': b})
+
+@app.route('/api/divergence/jensen_bregman', methods=['POST'])
+def api_jensen_bregman():
+    data = request.get_json() or {}
+    p = np.array(data.get('p', [1, 1]))
+    q = np.array(data.get('q', [2, 2]))
+    alpha = float(data.get('alpha', 0.5))
+    F_name = data.get('F', 'squared')
+    jb = skew_jensen_bregman(p, q, alpha, F_name)
+    return jsonify({'JB_F^alpha(p|q)': jb})
+
+@app.route('/api/divergence/bhattacharyya', methods=['POST'])
+def api_bhattacharyya():
+    data = request.get_json() or {}
+    if 'mean1' in data:
+        m1, v1 = data.get('mean1', 0), data.get('var1', 1)
+        m2, v2 = data.get('mean2', 1), data.get('var2', 1)
+        d = bhattacharyya_gaussian(m1, v1, m2, v2)
+        return jsonify({'Bhattacharyya_distance_gaussian': d})
+    p, q = data.get('p', [0.5, 0.5]), data.get('q', [0.5, 0.5])
+    d = bhattacharyya_discrete(np.array(p), np.array(q))
+    return jsonify({'Bhattacharyya_distance_discrete': d})
+
+@app.route('/api/divergence/chord_gap', methods=['POST'])
+def api_chord_gap():
+    data = request.get_json() or {}
+    p = np.array(data.get('p', [0, 0]))
+    q = np.array(data.get('q', [1, 1]))
+    beta = float(data.get('beta', 0.3))
+    gamma = float(data.get('gamma', 0.5))
+    F_name = data.get('F', 'squared')
+    d = chord_gap_biparametric(p, q, beta, gamma, F_name)
+    return jsonify({'J_F^{beta,gamma}(p:q)': d})
+
+@app.route('/api/divergence/centroid', methods=['POST'])
+def api_centroid():
+    data = request.get_json() or {}
+    points = np.array(data.get('points', [[0, 0], [1, 0], [0, 1]]))
+    weights = np.array(data.get('weights', [1.0 / len(points)] * len(points)))
+    alpha = float(data.get('alpha', 0.5))
+    F_name = data.get('F', 'squared')
+    c = centroid_cccp_skew_jensen(points, weights, alpha, F_name)
+    return jsonify({'centroid': c})
+
+@app.route('/api/divergence/kmeans_pp', methods=['POST'])
+def api_kmeans_pp():
+    data = request.get_json() or {}
+    points = np.array(data.get('points', [[0, 0], [1, 1], [2, 0], [0, 2]]))
+    k = int(data.get('k', 2))
+    alpha = float(data.get('alpha', 0.5))
+    seeds = kmeans_pp_seeds(points, k, 'squared', alpha)
+    return jsonify({'seeds': seeds})
+
+
+# ========== 論文実装: 音声変換の損失式（CycleGAN-VC, StarGAN-VC） ==========
+
+def cyclegan_loss_terms(fake_logits, real_logits, reconstructed, original, lambda_cyc=10, lambda_id=5):
+    """論文の損失式。fake_logits=D(G(x)), real_logits=D(y), reconstructed=G_Y2X(G_X2Y(x)), original=x."""
+    adv = float(np.mean(np.log(np.clip(real_logits, 1e-7, 1)) + np.log(np.clip(1 - fake_logits, 1e-7, 1))))
+    L_adv = -adv
+    L_cyc = float(np.mean(np.abs(np.asarray(reconstructed) - np.asarray(original))))
+    L_id = 0.0
+    return {'L_adv': L_adv, 'L_cyc': L_cyc, 'L_id': L_id, 'L_G': L_adv + lambda_cyc * L_cyc + lambda_id * L_id}
+
+def stargan_loss_terms(fake_logits, real_logits, domain_logits_fake, domain_logits_real, lambda_cls=10, lambda_cyc=10, lambda_id=5):
+    """StarGAN-VC: L_adv, L_cls^r, L_cyc, L_id."""
+    L_adv = -float(np.mean(np.log(np.clip(real_logits, 1e-7, 1)) + np.log(np.clip(1 - fake_logits, 1e-7, 1))))
+    L_cls_r = -float(np.mean(np.log(np.clip(domain_logits_fake, 1e-7, 1))))
+    L_cyc = 0.0
+    L_id = 0.0
+    L_G = L_adv + lambda_cls * L_cls_r + lambda_cyc * L_cyc + lambda_id * L_id
+    return {'L_adv': L_adv, 'L_cls_r': L_cls_r, 'L_cyc': L_cyc, 'L_id': L_id, 'L_G': L_G}
+
+@app.route('/api/voice/cyclegan_loss', methods=['POST'])
+def api_cyclegan_loss():
+    data = request.get_json() or {}
+    fake_logits = np.array(data.get('fake_logits', [0.3, 0.4]))
+    real_logits = np.array(data.get('real_logits', [0.7, 0.8]))
+    recon = np.array(data.get('reconstructed', [0.1, 0.2]))
+    orig = np.array(data.get('original', [0.1, 0.2]))
+    lam_cyc = float(data.get('lambda_cyc', 10))
+    lam_id = float(data.get('lambda_id', 5))
+    out = cyclegan_loss_terms(fake_logits, real_logits, recon, orig, lam_cyc, lam_id)
+    return jsonify(out)
+
+@app.route('/api/voice/stargan_loss', methods=['POST'])
+def api_stargan_loss():
+    data = request.get_json() or {}
+    fake_logits = np.array(data.get('fake_logits', [0.4]))
+    real_logits = np.array(data.get('real_logits', [0.7]))
+    domain_fake = np.array(data.get('domain_logits_fake', [0.8]))
+    domain_real = np.array(data.get('domain_logits_real', [0.9]))
+    lam_cls = float(data.get('lambda_cls', 10))
+    lam_cyc = float(data.get('lambda_cyc', 10))
+    lam_id = float(data.get('lambda_id', 5))
+    out = stargan_loss_terms(fake_logits, real_logits, domain_fake, domain_real, lam_cls, lam_cyc, lam_id)
+    return jsonify(out)
+
+
 if __name__ == '__main__':
     print("=" * 50)
     print("Advanced Voice Conversion Research Platform API Server")

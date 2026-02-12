@@ -1,6 +1,6 @@
 # Advanced Voice Conversion Research Platform
 
-国際会議（ICASSP / Interspeech / ICML）レベルの音声変換研究プラットフォーム
+**国際会議（NIPS, ICASSP, NeurIPS, ICML, EUSIPCO, SLT）** で発表された音声変換・音声合成の手法を、数式・パラメータ・簡易デモで扱う詳細ドキュメントです。トップページ（`index.html`）では会議別の論文一覧と「すぐ試せるデモ」を提供しています。
 
 ## 実装されている研究手法
 
