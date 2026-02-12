@@ -8,13 +8,8 @@
 [functions]
   directory = "netlify/functions"
 
-# 重要: /.netlify/functions/* を先に指定し、SPA の catch-all で上書きされないようにする
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# SPA用: 上記以外のパスは index.html へ
+# SPA用: 静的ファイル・Functions 以外は index.html へ
+# ※ /.netlify/functions/* は Netlify が自動で処理するため redirect に含めない（from に /.netlify は指定不可）
 [[redirects]]
   from = "/*"
   to = "/index.html"
