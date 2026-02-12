@@ -27,7 +27,11 @@ def parse_multipart(body_bytes, boundary):
         if b'\r\n\r\n' not in part:
             continue
         header_block, content = part.split(b'\r\n\r\n', 1)
-        content = content.replace(b'\r\n', b'\n').rstrip(b'\n')
+        # バイナリを壊さないよう、末尾の区切り CRLF のみ除去（WAV 内の \r\n は触らない）
+        if len(content) >= 2 and content[-2:] == b'\r\n':
+            content = content[:-2]
+        elif len(content) >= 1 and content[-1:] == b'\n':
+            content = content[:-1]
         disp = None
         for line in header_block.split(b'\r\n'):
             if line.lower().startswith(b'content-disposition:'):
@@ -156,6 +160,13 @@ def handler(event, context):
             'statusCode': 400,
             'headers': {**headers, 'Content-Type': 'application/json'},
             'body': json.dumps({'error': 'WAVの読み込みに失敗: ' + str(e)}, ensure_ascii=False)
+        }
+
+    if len(audio_data) == 0:
+        return {
+            'statusCode': 400,
+            'headers': {**headers, 'Content-Type': 'application/json'},
+            'body': json.dumps({'error': '音声データが空です。有効なWAVファイルを選んでください。'}, ensure_ascii=False)
         }
 
     # 簡易ピッチシフト
