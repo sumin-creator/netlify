@@ -104,6 +104,15 @@ netlify/
 **Netlify 上でも API が使えます。** フォルマント合成・F0分析・簡易音声変換は **Netlify Functions**（`netlify/functions/formant_synthesize.py`, `f0_analyze.py`, `voice_convert.py`）としてデプロイされ、`index.html` はローカル時は `research_api.py`、Netlify 時は `/.netlify/functions/xxx` を自動で呼びます。  
 ※ 初回や長時間未使用後の呼び出しはコールドスタートで数秒かかることがあります。
 
+**404 を防ぐための対策（このリポジトリで実施済み）**
+- **api_health** — 軽量な `api_health.py` を追加。ページ読み込み時に Netlify で API の利用可否をチェックし、失敗時は画面上部に「API が利用できません」バナーを表示する。
+- **エラー時のメッセージ** — 404 時は「呼び出し URL」と「Netlify Functions のデプロイ確認」の案内を表示するようにしている。
+
+**まだ 404 になる場合**
+1. **変更をプッシュしたか** — `index.html` と `netlify/functions/*.py`（`api_health.py` 含む）を GitHub に push し、Netlify で再デプロイする。
+2. **Netlify の Functions タブ** — デプロイ後に Site → Functions で `api_health` / `formant_synthesize` / `f0_analyze` / `voice_convert` が表示されているか確認する。
+3. **ビルドログ** — Deploys → 対象デプロイ → Build log で Python や Functions のエラーが出ていないか確認する。
+
 ---
 
 ## 謝辞

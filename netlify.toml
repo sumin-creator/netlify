@@ -5,11 +5,12 @@
 [build.environment]
   PYTHON_VERSION = "3.9"
 
-# 音声合成研究API（Netlify Functions用）
-# 注意: 実際の音声処理はサーバー側で実行する必要があります
-# 本番環境では、別のサーバー（Heroku、AWS Lambda等）を使用することを推奨します
+# Netlify は /.netlify/functions/* をリダイレクトより先に Functions へルーティングする。
+# 以下で SPA 用リダイレクトを指定しても、Functions へのリクエストは影響を受けない。
+[functions]
+  directory = "netlify/functions"
 
-# SPA用のリダイレクト（すべてのルートをindex.htmlに）
+# SPA用: 静的ファイルにないパスは index.html へ（Functions パスは上記のため対象外）
 [[redirects]]
   from = "/*"
   to = "/index.html"
