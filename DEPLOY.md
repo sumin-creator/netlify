@@ -33,9 +33,17 @@ git push -u origin main
 2. "Add new site" → "Import an existing project" を選択
 3. GitHubを選択し、リポジトリを選択
 4. ビルド設定：
+   - **Base directory**: （空欄のまま。リポジトリのルートがこの `netlify` フォルダなので、空で正しい）
    - **Build command**: （空欄のまま）
    - **Publish directory**: `.` (現在のディレクトリ)
 5. "Deploy site" をクリック
+
+### Functions が 404 になる場合の確認（formant_synthesize など）
+
+- 詳細は **NETLIFY_404_CHECK.md** を参照。
+- **Site configuration** → **Build & deploy** で **Base directory** が空か確認する。
+- デプロイ後、**Functions** タブに `formant_synthesize` が一覧に出ているか確認する。
+- 出ていない場合は、**Deploys** のビルドログで Functions / Python のエラーを確認する。
 
 ### 方法2: ドラッグ&ドロップ
 
