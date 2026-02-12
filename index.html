@@ -674,8 +674,14 @@
             var fd = new FormData(); fd.append('audio', fileInput.files[0]);
             try {
                 var res = await fetch(API.f0, { method: 'POST', body: fd });
-                if (!res.ok) { document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, res.status, null); return; }
-                var j = await res.json(); document.getElementById('f0-result').textContent = JSON.stringify(j, null, 2);
+                var text = await res.text();
+                var errDetail = null;
+                try { var j = JSON.parse(text); if (j && j.error) errDetail = j.error; } catch (_) {}
+                if (!res.ok) {
+                    document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, res.status, errDetail);
+                    return;
+                }
+                document.getElementById('f0-result').textContent = text ? (function(){ try { return JSON.stringify(JSON.parse(text), null, 2); } catch(_){ return text; } })() : '';
             } catch (e) { document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, (e.message && e.message.match(/\d{3}/)) ? e.message.match(/\d{3}/)[0] : null, e.message); }
         }
         async function demoSimpleVC() {

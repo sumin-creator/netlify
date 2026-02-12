@@ -162,10 +162,16 @@ def handler(event, context):
     f0_values = estimate_f0(audio_data, sample_rate)
     valid_f0 = [f for f in f0_values if f > 0]
     if len(valid_f0) == 0:
+        # 無音・ノイズ・短すぎる等で F0 が検出されない場合は 200 で結果を返す（UI で「接続エラー」と誤解されないように）
+        stats = {
+            'f0_values': f0_values,
+            'mean': None, 'min': None, 'max': None, 'std': None,
+            'message': 'F0を検出できませんでした（無音・ノイズ・または短い音声の可能性があります）',
+        }
         return {
-            'statusCode': 400,
+            'statusCode': 200,
             'headers': {**headers, 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'F0を検出できませんでした'}, ensure_ascii=False)
+            'body': json.dumps(stats, ensure_ascii=False)
         }
 
     stats = {
