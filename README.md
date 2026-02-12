@@ -140,9 +140,11 @@ netlify/
 - **エラー時のメッセージ** — 404 時は「呼び出し URL」と「Netlify Functions のデプロイ確認」の案内を表示するようにしている。
 
 **まだ 404 になる場合**
-1. **変更をプッシュしたか** — `index.html` と `netlify/functions/*.py`（`api_health.py` 含む）を GitHub に push し、Netlify で再デプロイする。
-2. **Netlify の Functions タブ** — デプロイ後に Site → Functions で `api_health` / `formant_synthesize` / `f0_analyze` / `voice_convert` / `divergence` / `voice_loss` が表示されているか確認する。
-3. **ビルドログ** — Deploys → 対象デプロイ → Build log で Python や Functions のエラーが出ていないか確認する。
+1. **変更をプッシュしたか** — `index.html`、`netlify.toml`、`netlify/functions/*.py` を GitHub に push し、Netlify で再デプロイする。
+2. **Base directory** — Netlify の Site settings → Build & deploy → Build settings で「Base directory」が**空**であることを確認する（リポジトリルートに `netlify.toml` と `netlify/functions/` がある前提）。
+3. **Netlify の Functions タブ** — デプロイ後に Site → Functions で `formant_synthesize` / `f0_analyze` / `voice_convert` / `api_health` / `divergence` / `voice_loss` が一覧に出ているか確認する。出ていなければビルドで Functions が認識されていない。
+4. **ビルドログ** — Deploys → 対象デプロイ → Build log で「Packaging Functions」や Python のエラーが出ていないか確認する。
+5. **リダイレクト** — `netlify.toml` で `/.netlify/functions/*` 用のルールを SPA 用 `/*` より**先**に書いてあり、Functions へのリクエストが index.html に書き換えられていないこと。
 
 ---
 

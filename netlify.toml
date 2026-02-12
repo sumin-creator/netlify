@@ -5,12 +5,16 @@
 [build.environment]
   PYTHON_VERSION = "3.9"
 
-# Netlify は /.netlify/functions/* をリダイレクトより先に Functions へルーティングする。
-# 以下で SPA 用リダイレクトを指定しても、Functions へのリクエストは影響を受けない。
 [functions]
   directory = "netlify/functions"
 
-# SPA用: 静的ファイルにないパスは index.html へ（Functions パスは上記のため対象外）
+# 重要: /.netlify/functions/* を先に指定し、SPA の catch-all で上書きされないようにする
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# SPA用: 上記以外のパスは index.html へ
 [[redirects]]
   from = "/*"
   to = "/index.html"
