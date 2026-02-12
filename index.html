@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>国際会議の音声研究｜Voice Conversion & TTS Research Platform</title>
-    <meta name="description" content="NIPS, ICASSP, NeurIPS, ICML, EUSIPCO, SLT で発表された音声変換・音声合成の論文を解説し、デモで体験するプラットフォーム。">
+    <title>理論ダイバージェンスと音声分析｜Jensen · Bregman · Bhattacharyya</title>
+    <meta name="description" content="Jensen / Bregman / Bhattacharyya など理論ダイバージェンスの数式と、WAV ファイルのブラウザ内分析・分布間ダイバージェンス計算。">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] } };</script>
@@ -159,79 +159,83 @@
 </head>
 <body>
     <div class="container">
-        <div id="api-unavailable-banner" role="alert">
-            <strong>API（Netlify Functions）が利用できません。</strong><br>
-            フォルマント合成・F0分析・簡易音声変換は、デプロイ完了後またはしばらく待ってからお試しください。<br>
-            <a href="https://docs.netlify.com/functions/overview/" target="_blank" rel="noopener">Netlify Functions</a> のデプロイ状況をご確認ください。
-        </div>
-
         <header class="hero">
-            <h1>国際会議の音声研究を、解説とデモで体験する</h1>
+            <h1>理論ダイバージェンスと音声分析</h1>
             <p class="tagline">
-                <strong>NIPS・ICASSP・NeurIPS・ICML・EUSIPCO・SLT</strong> で発表された音声変換・音声合成の論文を、数式・解説と「今すぐ試せるデモ」で学べるプラットフォームです。
+                <strong>Jensen · Bregman · Bhattacharyya · Chord Gap</strong> を数式で理解し、WAV ファイルをブラウザ内で分析。スペクトル分布から分布間ダイバージェンスまで、<strong>API 不要</strong>で全て実行できます。
             </p>
             <div class="conf-strip">
-                <span class="conf-badge nips">NIPS 2016</span>
-                <span class="conf-badge eusipco">EUSIPCO 2018</span>
-                <span class="conf-badge slt">SLT 2018</span>
-                <span class="conf-badge icassp">ICASSP 2019</span>
-                <span class="conf-badge neurips">NeurIPS 2019</span>
-                <span class="conf-badge icml">ICML 2021</span>
+                <span class="conf-badge icassp">Jensen ダイバージェンス</span>
+                <span class="conf-badge eusipco">Bregman</span>
+                <span class="conf-badge slt">Bhattacharyya</span>
+                <span class="conf-badge neurips">Chord Gap</span>
+                <span class="conf-badge icml">情報幾何</span>
             </div>
         </header>
 
-        <h2 class="section-title">国際会議で発表された手法</h2>
-        <p class="section-intro">音声変換・音声合成の代表的な国際会議論文を年代順に掲載。各手法の概要と、このサイトでできることをまとめています。距離・ダイバージェンス（Jensen, Bregman, Bhattacharyya, Chord Gap）の理論は<strong> <a href="#" onclick="switchTab('divergence', document.getElementById('tab-divergence')); return false;" style="color: var(--accent);">理論・ダイバージェンス</a></strong>タブで数式付きで解説しています。</p>
+        <h2 class="section-title">メニュー</h2>
+        <p class="section-intro">まず <strong><a href="#" onclick="switchTab('theory', document.querySelector('.tab[data-tab=theory]')); return false;" style="color: var(--accent);">理論</a></strong> で数式を確認し、<strong><a href="#" onclick="switchTab('demo', document.querySelector('.tab[data-tab=demo]')); return false;" style="color: var(--accent);">WAV 分析</a></strong> でファイルを読み込んで波形・スペクトログラム・ダイバージェンス比較を試せます。計算はすべてブラウザ内で完結します。</p>
 
-        <div class="papers-grid">
-            <div class="paper-card">
-                <div class="conf-badges"><span class="conf-badge nips">NIPS 2016</span></div>
-                <h3>WaveNet: A Generative Model for Raw Audio</h3>
-                <p class="authors">van den Oord, Dieleman, Zen, et al. (DeepMind)</p>
-                <p class="impact">生波形を自己回帰で生成。TTS・VC のボコーダの基盤となり、後の VITS などに影響。</p>
-                <p class="cta"><a href="#" onclick="switchTab('papers', this); document.getElementById('papers').querySelector('.panel:last-of-type').scrollIntoView(); return false;">論文詳細・数式 →</a></p>
-            </div>
-            <div class="paper-card">
-                <div class="conf-badges"><span class="conf-badge eusipco">EUSIPCO 2018</span><span class="conf-badge icassp">ICASSP 2019</span></div>
-                <h3>CycleGAN-VC: Non-parallel Voice Conversion</h3>
-                <p class="authors">Kaneko, Kameoka, Tanaka, Hojo</p>
-                <p class="impact">対応づけのない2話者データで、Cycle 一貫性と敵対学習により話者変換を実現。</p>
-                <p class="cta"><a href="research.html">詳細デモ・パラメータ →</a> ｜ <a href="#" onclick="switchTab('papers', this); return false;">数式・解説</a></p>
-            </div>
-            <div class="paper-card">
-                <div class="conf-badges"><span class="conf-badge slt">SLT 2018</span><span class="conf-badge icassp">ICASSP 2019</span></div>
-                <h3>StarGAN-VC: Many-to-Many Voice Conversion</h3>
-                <p class="authors">Kameoka, Kaneko, Tanaka, Hojo</p>
-                <p class="impact">1つの Generator で複数話者間の多対多変換。ドメイン分類損失で話者を制御。</p>
-                <p class="cta"><a href="research.html">詳細デモ →</a> ｜ <a href="#" onclick="switchTab('papers', this); return false;">数式・解説</a></p>
-            </div>
-            <div class="paper-card">
-                <div class="conf-badges"><span class="conf-badge neurips">NeurIPS 2019</span></div>
-                <h3>AutoVC: Zero-Shot Voice Style Transfer</h3>
-                <p class="authors">Qian, Zhang, Chang, Hasegawa-Johnson</p>
-                <p class="impact">ターゲット話者の学習データなしで、数秒の参照音声からゼロショット音声変換。</p>
-                <p class="cta"><a href="#" onclick="switchTab('papers', this); return false;">論文詳細・数式 →</a></p>
-            </div>
-            <div class="paper-card">
-                <div class="conf-badges"><span class="conf-badge icml">ICML 2021</span></div>
-                <h3>VITS: Conditional VAE with Adversarial Learning for TTS</h3>
-                <p class="authors">Kim, Kong, Son (Kakao)</p>
-                <p class="impact">テキストから自然な音声を end-to-end で合成。VAE・敵対学習・Monotonic Alignment を組み合わせた TTS。</p>
-                <p class="cta"><a href="#" onclick="switchTab('demo', this); return false;">フォルマントデモで雰囲気を体験 →</a> ｜ <a href="#" onclick="switchTab('papers', this); return false;">数式</a></p>
-            </div>
+        <div class="tabs">
+            <button class="tab active" data-tab="demo" onclick="switchTab('demo', this)">WAV 分析</button>
+            <button class="tab" data-tab="theory" onclick="switchTab('theory', this)">理論（数式）</button>
+            <button class="tab" data-tab="divergence" onclick="switchTab('divergence', this)">ダイバージェンス計算</button>
+            <button class="tab" data-tab="papers" onclick="switchTab('papers', this)">論文参照</button>
+            <button class="tab" data-tab="advanced" onclick="switchTab('advanced', this)">詳細</button>
         </div>
 
-        <h2 class="section-title">メニュー</h2>
-        <div class="tabs">
-            <button class="tab" onclick="switchTab('conference', this)">国際会議の手法</button>
-            <button class="tab active" onclick="switchTab('demo', this)">すぐ試せるデモ</button>
-            <button class="tab" onclick="switchTab('papers', this)">論文詳細・数式</button>
-            <button class="tab" id="tab-divergence" onclick="switchTab('divergence', this)">理論・ダイバージェンス</button>
-            <button class="tab" onclick="switchTab('advanced', this)">詳細デモページ</button>
+        <!-- 理論（数式のみ） -->
+        <div id="theory" class="tab-content">
+            <div class="panel">
+                <h3>距離・ダイバージェンスの役割</h3>
+                <p style="color: var(--text-muted); margin-bottom: 12px;">音声・信号処理・機械学習では、分布やパラメータ間の「距離」$D(\cdot, \cdot)$ の選び方が重要です。凸関数 $F$ に対する Jensen 不等式のギャップから導かれる Jensen / Bregman / Bhattacharyya / Chord Gap が、クラスタリング・情報幾何・学習の基盤となります（Frank Nielsen ほか）。</p>
+            </div>
+            <div class="panel">
+                <h3>1. Jensen 不等式と Jensen ダイバージェンス（Burbea–Rao）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 10px;">$F$ を狭義凸関数とするとき、Jensen の不等式より</p>
+                <div class="math-block">$$F\!\left(\frac{p+q}{2}\right) \leq \frac{F(p)+F(q)}{2}.$$</div>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">この不等式のギャップが Jensen ダイバージェンス:</p>
+                <div class="math-block">$$J_F(p,q) = \frac{F(p)+F(q)}{2} - F\!\left(\frac{p+q}{2}\right) \geq 0.$$</div>
+                <p style="color: var(--text-muted);">$F(x)=\sum_i x_i^2$（squared）のとき $J_F$ はスケール付きユークリッド距離の二乗に、$F(x)=\sum_i x_i\log x_i$（entropy）のときは情報幾何と対応します。</p>
+            </div>
+            <div class="panel">
+                <h3>2. スキュー Jensen ダイバージェンス（パラメータ $\alpha \in (0,1)$）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">重み付き平均 $(1-\alpha)p + \alpha q$ に対する凸不等式のギャップ:</p>
+                <div class="math-block">$$J_F^\alpha(p : q) = (1-\alpha)F(p) + \alpha F(q) - F\bigl((1-\alpha)p + \alpha q\bigr).$$</div>
+                <p style="color: var(--text-muted);">$(pq)_\lambda := (1-\lambda)p + \lambda q$ と書くと $J_F^\alpha(p : q) = (F(p)\,F(q))_\alpha - F((pq)_\alpha)$。一般に非対称: $J_F^\alpha(p:q) \neq J_F^\alpha(q:p)$。</p>
+            </div>
+            <div class="panel">
+                <h3>3. Bregman ダイバージェンスと極限</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">$F$ が狭義凸かつ微分可能なとき:</p>
+                <div class="math-block">$$B_F(p : q) = F(p) - F(q) - (p-q)^\top \nabla F(q).$$</div>
+                <p style="color: var(--text-muted);">スキュー Jensen のスケール版 $sJ_F^\alpha(p:q) = \frac{1}{1-\alpha} J_F^\alpha(p:q)$ は $\alpha \to 0^+$ または $\alpha \to 1^-$ で Bregman に収束。Taylor–Lagrange 形（中間点 $\xi \in [p,q]$）:</p>
+                <div class="math-block">$$B_F(p|q) = \frac{1}{2}(p-q)^\top \nabla^2 F(\xi)\,(p-q).$$</div>
+            </div>
+            <div class="panel">
+                <h3>4. 統計的距離：Bhattacharyya と KL</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">分布 $p(x), q(x)$ に対するスキュー Bhattacharyya と Kullback–Leibler:</p>
+                <div class="math-block">$$\mathrm{Bhat}_\alpha(p : q) = -\log \int p(x)^{1-\alpha} q(x)^\alpha \,dx, \qquad \mathrm{KL}(p\|q) = \int p(x) \log \frac{p(x)}{q(x)}\,dx.$$</div>
+                <p style="color: var(--text-muted);">離散分布では $\mathrm{Bhat}(p\|q) = -\log \sum_i \sqrt{p_i q_i}$。指数族ではパラメータ空間上で Jensen / Bregman と対応します。</p>
+            </div>
+            <div class="panel">
+                <h3>5. Chord Gap ダイバージェンス（三パラメータ族）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">Nielsen による「上弦」と「下弦」の垂直ギャップ。二つのスキュー Jensen の差として:</p>
+                <div class="math-block">$$J_F^{\beta,\gamma}(p:q) = J_F^\alpha(p:q) - J_F^\alpha((pq)_\alpha : (pq)_s), \quad \lambda = \lambda(\alpha,\beta,\gamma).$$</div>
+                <p style="color: var(--text-muted);">一般化 Bhattacharyya は三パラメータ族 $\mathrm{Bhat}_{\alpha,\beta,\gamma}(\theta_p : \theta_q)$ として定義され、$\alpha=\beta$ のとき従来のスキュー Bhattacharyya に帰着。</p>
+            </div>
+            <div class="panel">
+                <h3>6. Skew Jensen–Bregman (JB)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">二つの Bregman の重み付き和:</p>
+                <div class="math-block">$$\mathrm{JB}_F^\alpha(p|q) = (1-\alpha) B_F(p : (pq)_\alpha) + \alpha B_F(q : (pq)_\alpha).$$</div>
+            </div>
+            <div class="panel paper-ref">
+                <h4>参考文献</h4>
+                <p><strong>Frank Nielsen</strong>, "The chord gap divergence and a generalization of the Bhattacharyya distance," École Polytechnique &amp; Sony CSL. <a href="https://www.lix.polytechnique.fr/~nielsen/CGD/" target="_blank" rel="noopener" style="color: var(--accent);">lix.polytechnique.fr/~nielsen/CGD/</a></p>
+            </div>
         </div>
 
         <!-- 国際会議の手法（タブ内で上記グリッドの要約を再掲） -->
-        <div id="conference" class="tab-content">
+        <div id="conference" class="tab-content" style="display:none;">
             <div class="panel">
                 <h3>掲載している国際会議と論文</h3>
                 <p style="color: var(--text-muted); margin-bottom: 16px;">音声・信号処理・機械学習のトップカンファレンスで発表された手法を、解説とデモで活用できるようにしています。</p>
@@ -247,11 +251,11 @@
             </div>
         </div>
 
-        <!-- すぐ試せるデモ -->
+        <!-- WAV 分析（全てブラウザ内） -->
         <div id="demo" class="tab-content active">
             <div class="panel">
                 <h3>📊 スペクトル分析</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">論文でよく使われるメルスペクトログラムのイメージを、ブラウザ内で確認できます。</p>
+                <p style="margin-bottom:12px; color: var(--text-muted);">WAV を 1 つ選ぶと、波形とスペクトログラムをブラウザ内で即座に表示します。論文でよく使われるメルスペクトログラムのイメージを確認できます。</p>
                 <input type="file" id="demo-spectrum-file" accept="audio/wav,audio/*">
                 <button onclick="demoSpectrum()">分析して表示</button>
                 <div class="grid2" style="margin-top:16px;">
@@ -260,34 +264,13 @@
                 </div>
                 <audio id="demo-audio" controls style="margin-top:12px;"></audio>
             </div>
-            <div class="panel">
-                <h3>🎚️ フォルマント合成（API）</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">古典的な音声合成の基礎。F0・フォルマントで音を生成します。</p>
-                <div class="controls">
-                    <label>F0 (Hz)</label>
-                    <input type="range" id="formant-f0" min="80" max="400" value="150">
-                    <span id="formant-f0-val">150</span> Hz
-                </div>
-                <button onclick="demoFormant()">合成して再生</button>
-                <audio id="formant-audio" controls style="margin-top:12px;"></audio>
-            </div>
-            <div class="panel">
-                <h3>📈 F0分析（API）</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">音声変換の前処理として重要な基本周波数（ピッチ）軌跡を推定します。</p>
-                <input type="file" id="demo-f0-file" accept="audio/wav,audio/*">
-                <span id="demo-f0-file-label" style="display:inline-block; margin-left:8px; color: var(--text-muted); font-size:0.9rem;">ファイルが選択されていません</span>
-                <button onclick="demoF0()">F0分析</button>
-                <pre id="f0-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.85rem; overflow:auto;"></pre>
-            </div>
-            <div class="panel">
-                <h3>🔄 簡易音声変換（API）</h3>
-                <div class="impl-note warn" style="margin-bottom:12px;">CycleGAN-VC / StarGAN-VC の「本物」は学習済みモデルが必要です。ここではピッチシフト等の簡易デモを提供しています。</div>
-                <input type="file" id="demo-vc-file" accept="audio/wav,audio/*">
-                <span id="demo-vc-file-label" style="display:inline-block; margin-left:8px; color: var(--text-muted); font-size:0.9rem;">ファイルが選択されていません</span>
-                <label>変換強度 (0–100%)</label>
-                <input type="range" id="demo-vc-strength" min="0" max="100" value="50">
-                <button onclick="demoSimpleVC()">簡易変換して再生</button>
-                <audio id="vc-output" controls style="margin-top:12px;"></audio>
+            <div class="panel" style="border-color: var(--accent);">
+                <h3>📐 2つの WAV のダイバージェンス比較</h3>
+                <p style="margin-bottom:12px; color: var(--text-muted);">2つの WAV を読み込むと、それぞれのパワースペクトルから正規化分布 $p,\,q$ を求め、<strong>Jensen</strong>・<strong>Bregman</strong>・<strong>Bhattacharyya</strong>（離散）をブラウザ内で計算します。理論タブの数式と対応しています。</p>
+                <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV A: <input type="file" id="div-wav-a" accept="audio/wav,audio/*"> <span id="div-wav-a-label">未選択</span></p>
+                <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV B: <input type="file" id="div-wav-b" accept="audio/wav,audio/*"> <span id="div-wav-b-label">未選択</span></p>
+                <button onclick="runDivergenceFromWav()">ダイバージェンス計算</button>
+                <pre id="div-wav-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.9rem; overflow:auto; min-height:80px;"></pre>
             </div>
         </div>
 
@@ -423,9 +406,10 @@
                 </div>
             </div>
             <div class="panel">
-                <h3>距離・ダイバージェンスの役割</h3>
-                <p style="color: var(--text-muted); margin-bottom: 12px;">音声・信号処理・機械学習では、分布やパラメータ間の「距離」$D(\cdot, \cdot)$ の選び方が重要です。パラメトリックな族 $D_\alpha(\cdot, \cdot)$ や、凸不等式のギャップから導かれるダイバージェンスが、クラスタリング・情報幾何・学習に使われます。以下は Frank Nielsen の Chord Gap / Jensen / Bregman / Bhattacharyya に関する理論の要約です。</p>
+                <h3>数値計算（全てブラウザ内・API 不要）</h3>
+                <p style="color: var(--text-muted); margin-bottom: 12px;">理論タブの式に基づき、Jensen / Bregman / Bhattacharyya / Chord Gap / Jensen–Bregman / セントロイド / k-means++ を<strong>ブラウザ内で</strong>計算します。WAV から分布を取る比較は「WAV 分析」タブの「2つの WAV のダイバージェンス比較」で行えます。数式の詳細は<strong>理論（数式）</strong>タブを参照してください。</p>
             </div>
+            <div style="display:none;">
             <div class="panel">
                 <h3>1. Jensen 不等式と Jensen ダイバージェンス（Burbea–Rao）</h3>
                 <p style="color: var(--text-muted); margin-bottom: 10px;">$F$ を狭義凸関数とするとき、Jensen の不等式より</p>
@@ -491,6 +475,7 @@
                 <h4>参考文献</h4>
                 <p><strong>Frank Nielsen</strong>, "The chord gap divergence and a generalization of the Bhattacharyya distance," École Polytechnique &amp; Sony CSL. Index terms: Jensen/Burbea–Rao divergence, Bregman divergence, centroid, k-means++. 再現用コード: <a href="https://www.lix.polytechnique.fr/~nielsen/CGD/" target="_blank" rel="noopener" style="color: var(--accent);">lix.polytechnique.fr/~nielsen/CGD/</a></p>
             </div>
+            </div>
         </div>
 
         <div id="advanced" class="tab-content">
@@ -502,122 +487,129 @@
         </div>
 
         <footer class="footer-ack">
-            <p><strong>謝辞</strong> — 本プラットフォームは以下の国際会議論文と著者に基づいています。</p>
-            <p style="margin-top:8px;">WaveNet (NIPS 2016) · CycleGAN-VC (EUSIPCO 2018, ICASSP 2019) · StarGAN-VC (SLT 2018, ICASSP 2019) · AutoVC (NeurIPS 2019) · VITS (ICML 2021)</p>
+            <p><strong>謝辞</strong> — 理論ダイバージェンスは Frank Nielsen (Chord Gap, Jensen/Bregman/Bhattacharyya) に基づきます。音声・論文参照は国際会議 (NIPS, ICASSP, NeurIPS, ICML, EUSIPCO, SLT) の著者に敬意を表します。</p>
         </footer>
     </div>
 
     <script>
-        var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-        var isNetlify = !isLocal && (window.location.hostname.includes('netlify.app') || window.location.hostname.includes('netlify.com'));
-        var API = {
-            formant: isLocal ? 'http://localhost:5000/api/formant/synthesize' : '/.netlify/functions/formant_synthesize',
-            f0:       isLocal ? 'http://localhost:5000/api/f0/analyze'           : '/.netlify/functions/f0_analyze',
-            voice:    isLocal ? 'http://localhost:5000/api/voice/convert'        : '/.netlify/functions/voice_convert',
-            health:   isLocal ? 'http://localhost:5000/api/health'              : '/.netlify/functions/api_health'
-        };
-        function apiErrorDetail(url, status, err) {
-            var msg = '接続できませんでした: ' + (url || 'API') + (status ? ' (' + status + ')' : '');
-            if (isNetlify && (status === 404 || status === 502 || status === 503)) {
-                msg += '\n\nNetlify Functions のデプロイ・ビルドログをご確認ください。';
-            } else if (isLocal) { msg += '\n\nresearch_api.py を起動していますか？ (python research_api.py)'; }
-            else if (status !== 404) { msg += '\n\nしばらく待ってから再試行してください。'; }
-            return msg + (err ? '\n\n' + err : '');
-        }
-        (function checkApiAvailable() {
-            if (!isNetlify) return;
-            var banner = document.getElementById('api-unavailable-banner');
-            fetch(API.health, { method: 'GET', cache: 'no-store' }).then(function(r) { if (!r.ok) banner.classList.add('show'); }).catch(function() { banner.classList.add('show'); });
-        })();
         function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if (el) el.classList.add('active');
-            if (window.MathJax && id === 'divergence') window.MathJax.typesetPromise && window.MathJax.typesetPromise().catch(function() {});
+            if (window.MathJax && (id === 'divergence' || id === 'theory')) window.MathJax.typesetPromise && window.MathJax.typesetPromise().catch(function() {});
         }
-        var API_BASE_FULL = isLocal ? 'http://localhost:5000' : '';
         function parseJson(id, def) { try { return JSON.parse(document.getElementById(id).value || def); } catch (e) { return def; } }
-        function divergenceApi(action, body) {
-            var url = isLocal ? API_BASE_FULL + '/api/divergence/' + action : '/.netlify/functions/divergence';
-            var payload = isLocal ? body : Object.assign({ action: action }, body);
-            return { url: url, body: payload };
+
+        // ========== ダイバージェンス（全てブラウザ内） ==========
+        var eps = 1e-12;
+        function F_squared(x) { return x.reduce(function(s, v) { return s + v * v; }, 0); }
+        function grad_F_squared(x) { return x.map(function(v) { return 2 * v; }); }
+        function F_entropy(x) { return x.reduce(function(s, v) { v += eps; return s + v * Math.log(v); }, 0); }
+        function grad_F_entropy(x) { return x.map(function(v) { return 1 + Math.log(v + eps); }); }
+        function dot(a, b) { return a.reduce(function(s, v, i) { return s + v * b[i]; }, 0); }
+        function jensen_div(p, q, Fname) {
+            var F = Fname === 'entropy' ? F_entropy : F_squared;
+            var mid = p.map(function(_, i) { return (p[i] + q[i]) / 2; });
+            return (F(p) + F(q)) / 2 - F(mid);
         }
-        function voiceLossApi(action, body) {
-            var url = isLocal ? API_BASE_FULL + '/api/voice/' + action : '/.netlify/functions/voice_loss';
-            var payload = isLocal ? body : Object.assign({ action: action }, body);
-            return { url: url, body: payload };
+        function skew_jensen(p, q, alpha, Fname) {
+            var F = Fname === 'entropy' ? F_entropy : F_squared;
+            alpha = Math.max(eps, Math.min(1 - eps, alpha));
+            var mid = p.map(function(_, i) { return (1 - alpha) * p[i] + alpha * q[i]; });
+            return (1 - alpha) * F(p) + alpha * F(q) - F(mid);
         }
+        function bregman(p, q, Fname) {
+            var F = Fname === 'entropy' ? F_entropy : F_squared;
+            var g = Fname === 'entropy' ? grad_F_entropy : grad_F_squared;
+            return F(p) - F(q) - dot(p.map(function(v, i) { return v - q[i]; }), g(q));
+        }
+        function jensen_bregman(p, q, alpha, Fname) {
+            alpha = Math.max(eps, Math.min(1 - eps, alpha));
+            var mid = p.map(function(_, i) { return (1 - alpha) * p[i] + alpha * q[i]; });
+            return (1 - alpha) * bregman(p, mid, Fname) + alpha * bregman(q, mid, Fname);
+        }
+        function bhattacharyya_disc(p, q) {
+            var sp = p.reduce(function(a, b) { return a + b; }, 0) + eps, sq = q.reduce(function(a, b) { return a + b; }, 0) + eps;
+            var pp = p.map(function(v) { return v / sp; }), qq = q.map(function(v) { return v / sq; });
+            var bc = pp.reduce(function(s, v, i) { return s + Math.sqrt(Math.max(0, v * qq[i])); }, 0);
+            bc = Math.max(eps, Math.min(1, bc));
+            return -Math.log(bc);
+        }
+        function bhattacharyya_gauss(m1, v1, m2, v2) {
+            v1 += eps; v2 += eps;
+            var v = (v1 + v2) / 2;
+            var bc = Math.exp(-(m1 - m2) * (m1 - m2) / (4 * v)) / Math.sqrt(2 * Math.PI * Math.sqrt(v1 * v2));
+            bc = Math.max(eps, Math.min(1, bc));
+            return -Math.log(bc);
+        }
+        function chord_gap(p, q, beta, gamma, Fname) {
+            var alpha = Math.max(eps, Math.min(1 - eps, gamma));
+            var j1 = skew_jensen(p, q, alpha, Fname);
+            var pq_a = p.map(function(_, i) { return (1 - alpha) * p[i] + alpha * q[i]; });
+            var pq_s = p.map(function(_, i) { return (1 - beta) * p[i] + beta * q[i]; });
+            var j2 = skew_jensen(pq_a, pq_s, 0.5, Fname);
+            return j1 - j2;
+        }
+        function centroid(points, weights) {
+            var wsum = weights.reduce(function(a, b) { return a + b; }, 0) + eps;
+            var w = weights.map(function(v) { return v / wsum; });
+            return points[0].map(function(_, d) { return points.reduce(function(s, pt, i) { return s + pt[d] * w[i]; }, 0); });
+        }
+
         function calcJensen() {
             var p = parseJson('d-jensen-p', '[0,0]'), q = parseJson('d-jensen-q', '[1,1]'), F = document.getElementById('d-jensen-f').value;
-            var api = divergenceApi('jensen', { p: p, q: q, F: F });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-jensen').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-jensen').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-jensen').textContent = JSON.stringify({ 'J_F(p,q)': jensen_div(p, q, F) }, null, 2);
         }
         function calcSkewJensen() {
             var p = parseJson('d-skew-p', '[0,0]'), q = parseJson('d-skew-q', '[1,1]'), alpha = parseFloat(document.getElementById('d-skew-a').value);
-            var api = divergenceApi('skew_jensen', { p: p, q: q, alpha: alpha, F: 'squared' });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-skew').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-skew').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-skew').textContent = JSON.stringify({
+                'J_F^alpha(p:q)': skew_jensen(p, q, alpha, 'squared'),
+                'J_F^alpha(q:p)': skew_jensen(q, p, alpha, 'squared')
+            }, null, 2);
         }
         function calcBregman() {
             var p = parseJson('d-bregman-p', '[1,1]'), q = parseJson('d-bregman-q', '[2,2]'), F = document.getElementById('d-bregman-f').value;
-            var api = divergenceApi('bregman', { p: p, q: q, F: F });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-bregman').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-bregman').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-bregman').textContent = JSON.stringify({ 'B_F(p:q)': bregman(p, q, F) }, null, 2);
         }
         function calcBhattacharyya() {
             var m1 = parseFloat(document.getElementById('d-bhat-m1').value), v1 = parseFloat(document.getElementById('d-bhat-v1').value), m2 = parseFloat(document.getElementById('d-bhat-m2').value), v2 = parseFloat(document.getElementById('d-bhat-v2').value);
-            var api = divergenceApi('bhattacharyya', { mean1: m1, var1: v1, mean2: m2, var2: v2 });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-bhat').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-bhat').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-bhat').textContent = JSON.stringify({ Bhattacharyya_distance_gaussian: bhattacharyya_gauss(m1, v1, m2, v2) }, null, 2);
         }
         function calcChordGap() {
             var p = parseJson('d-chord-p', '[0,0]'), q = parseJson('d-chord-q', '[1,1]'), beta = parseFloat(document.getElementById('d-chord-beta').value), gamma = parseFloat(document.getElementById('d-chord-gamma').value);
-            var api = divergenceApi('chord_gap', { p: p, q: q, beta: beta, gamma: gamma, F: 'squared' });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-chord').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-chord').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-chord').textContent = JSON.stringify({ 'J_F^{beta,gamma}(p:q)': chord_gap(p, q, beta, gamma, 'squared') }, null, 2);
         }
         function calcJB() {
             var p = parseJson('d-jb-p', '[1,1]'), q = parseJson('d-jb-q', '[2,2]'), alpha = parseFloat(document.getElementById('d-jb-a').value);
-            var api = divergenceApi('jensen_bregman', { p: p, q: q, alpha: alpha, F: 'squared' });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-jb').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-jb').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-jb').textContent = JSON.stringify({ 'JB_F^alpha(p|q)': jensen_bregman(p, q, alpha, 'squared') }, null, 2);
         }
         function calcCentroid() {
             var points = parseJson('d-centroid-pts', '[[0,0],[1,0],[0,1]]'), alpha = parseFloat(document.getElementById('d-centroid-a').value);
-            var w = Array(points.length).fill(1.0 / points.length);
-            var api = divergenceApi('centroid', { points: points, weights: w, alpha: alpha, F: 'squared' });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-centroid').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-centroid').textContent = 'Error: ' + e.message; });
+            var w = points.map(function() { return 1 / points.length; });
+            document.getElementById('out-centroid').textContent = JSON.stringify({ centroid: centroid(points, w) }, null, 2);
         }
         function calcKmeansPP() {
             var points = parseJson('d-kmeans-pts', '[[0,0],[1,1],[2,0],[0,2]]'), k = parseInt(document.getElementById('d-kmeans-k').value, 10);
-            var api = divergenceApi('kmeans_pp', { points: points, k: k, alpha: 0.5 });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-kmeans').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-kmeans').textContent = 'Error: ' + e.message; });
+            if (k >= points.length) { document.getElementById('out-kmeans').textContent = JSON.stringify({ seeds: points }, null, 2); return; }
+            var indices = [0];
+            for (var r = 0; r < k - 1; r++) {
+                var d2 = points.map(function(pt, i) {
+                    if (indices.indexOf(i) >= 0) return 0;
+                    return Math.min.apply(null, indices.map(function(c) { return Math.max(0, skew_jensen(pt, points[c], 0.5, 'squared')); }));
+                });
+                var sum = d2.reduce(function(a, b) { return a + b; }, 0) + eps;
+                var probs = d2.map(function(v) { return v / sum; });
+                var cum = 0, rnd = Math.random();
+                for (var i = 0; i < probs.length; i++) { cum += probs[i]; if (rnd <= cum) { indices.push(i); break; } }
+            }
+            document.getElementById('out-kmeans').textContent = JSON.stringify({ seeds: indices.map(function(i) { return points[i]; }) }, null, 2);
         }
         function calcCycleGANLoss() {
-            var fake = parseJson('loss-fake', '[0.3,0.4]'), real = parseJson('loss-real', '[0.7,0.8]'), recon = parseJson('loss-recon', '[0.1,0.2]'), orig = parseJson('loss-orig', '[0.1,0.2]');
-            var api = voiceLossApi('cyclegan_loss', { fake_logits: fake, real_logits: real, reconstructed: recon, original: orig, lambda_cyc: 10, lambda_id: 5 });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-cyclegan').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-cyclegan').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-cyclegan').textContent = 'L_G = L_adv + λ_cyc L_cyc + λ_id L_id（論文参照タブで数式を確認）。\n本サイトは API に依存しないため、損失の数値計算は行っていません。';
         }
         function calcStarGANLoss() {
-            var fake = parseJson('loss-s-fake', '[0.4]'), real = parseJson('loss-s-real', '[0.7]'), df = parseJson('loss-s-df', '[0.8]'), dr = parseJson('loss-s-dr', '[0.9]');
-            var api = voiceLossApi('stargan_loss', { fake_logits: fake, real_logits: real, domain_logits_fake: df, domain_logits_real: dr });
-            fetch(api.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(api.body) })
-                .then(function(r) { return r.json(); }).then(function(j) { document.getElementById('out-stargan').textContent = JSON.stringify(j, null, 2); })
-                .catch(function(e) { document.getElementById('out-stargan').textContent = 'Error: ' + e.message; });
+            document.getElementById('out-stargan').textContent = 'L_G = L_adv + λ_cls L_cls^r + λ_cyc L_cyc + λ_id L_id（論文参照タブで数式を確認）。\n本サイトは API に依存しないため、損失の数値計算は行っていません。';
         }
         let demoAudioBuffer = null;
         document.getElementById('demo-spectrum-file').onchange = async function(e) {
@@ -663,44 +655,43 @@
         }
         function fft(re, im) { var n = re.length; for (var k = 0; k < n; k++) { var sr = 0, si = 0; for (var t = 0; t < n; t++) { var angle = -2 * Math.PI * k * t / n; sr += re[t] * Math.cos(angle) - im[t] * Math.sin(angle); si += re[t] * Math.sin(angle) + im[t] * Math.cos(angle); } re[k] = sr; im[k] = si; } }
         function demoSpectrum() { var el = document.getElementById('demo-spectrum-file'); if (el.files.length === 0) { alert('ファイルを選んでください'); return; } el.dispatchEvent(new Event('change')); }
-        document.getElementById('formant-f0').oninput = function() { document.getElementById('formant-f0-val').textContent = this.value; };
-        function updateFileLabel(inputId, labelId) {
-            var input = document.getElementById(inputId), label = document.getElementById(labelId);
-            if (!input || !label) return;
-            label.textContent = input.files[0] ? input.files[0].name : 'ファイルが選択されていません';
-        }
-        document.getElementById('demo-f0-file').onchange = function() { updateFileLabel('demo-f0-file', 'demo-f0-file-label'); };
-        document.getElementById('demo-vc-file').onchange = function() { updateFileLabel('demo-vc-file', 'demo-vc-file-label'); };
-        async function demoFormant() {
-            try {
-                var res = await fetch(API.formant, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ f0: parseInt(document.getElementById('formant-f0').value, 10), duration: 1.0 }) });
-                if (!res.ok) throw new Error(apiErrorDetail(API.formant, res.status, null));
-                var blob = await res.blob(); document.getElementById('formant-audio').src = URL.createObjectURL(blob);
-            } catch (e) { alert(e.message.indexOf('接続できませんでした') >= 0 ? e.message : apiErrorDetail(API.formant, null, e.message)); }
-        }
-        async function demoF0() {
-            var fileInput = document.getElementById('demo-f0-file'); if (!fileInput.files[0]) { alert('ファイルを選んでください'); return; }
-            var fd = new FormData(); fd.append('audio', fileInput.files[0]);
-            try {
-                var res = await fetch(API.f0, { method: 'POST', body: fd });
-                var text = await res.text();
-                var errDetail = null;
-                try { var j = JSON.parse(text); if (j && j.error) errDetail = j.error; } catch (_) {}
-                if (!res.ok) {
-                    document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, res.status, errDetail);
-                    return;
+
+        function spectrumToDistribution(buffer, bins) {
+            bins = bins || 64;
+            var ch = buffer.getChannelData(0), sr = buffer.sampleRate, fftSize = 1024, hop = fftSize / 2;
+            var win = new Float32Array(fftSize); for (var i = 0; i < fftSize; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftSize - 1));
+            var hist = new Float32Array(bins);
+            var nFrames = Math.floor((ch.length - fftSize) / hop) + 1;
+            for (var fi = 0; fi < nFrames; fi++) {
+                var start = fi * hop, re = new Float32Array(fftSize), im = new Float32Array(fftSize);
+                for (var i = 0; i < fftSize; i++) { re[i] = ch[start + i] * win[i]; im[i] = 0; }
+                fft(re, im);
+                for (var k = 0; k < Math.floor(fftSize / 2); k++) {
+                    var mag = Math.sqrt(re[k] * re[k] + im[k] * im[k]);
+                    var bin = Math.min(bins - 1, Math.floor((k / (fftSize / 2)) * bins));
+                    hist[bin] += mag;
                 }
-                document.getElementById('f0-result').textContent = text ? (function(){ try { return JSON.stringify(JSON.parse(text), null, 2); } catch(_){ return text; } })() : '';
-            } catch (e) { document.getElementById('f0-result').textContent = apiErrorDetail(API.f0, (e.message && e.message.match(/\d{3}/)) ? e.message.match(/\d{3}/)[0] : null, e.message); }
+            }
+            var sum = hist.reduce(function(a, b) { return a + b; }, 0) + eps;
+            return Array.from(hist).map(function(v) { return v / sum; });
         }
-        async function demoSimpleVC() {
-            var fileInput = document.getElementById('demo-vc-file'); if (!fileInput.files[0]) { alert('ファイルを選んでください'); return; }
-            var fd = new FormData(); fd.append('audio', fileInput.files[0]); fd.append('type', 'pitch'); fd.append('strength', document.getElementById('demo-vc-strength').value);
+        document.getElementById('div-wav-a').onchange = function() { document.getElementById('div-wav-a-label').textContent = this.files[0] ? this.files[0].name : '未選択'; };
+        document.getElementById('div-wav-b').onchange = function() { document.getElementById('div-wav-b-label').textContent = this.files[0] ? this.files[0].name : '未選択'; };
+        async function runDivergenceFromWav() {
+            var fa = document.getElementById('div-wav-a').files[0], fb = document.getElementById('div-wav-b').files[0];
+            if (!fa || !fb) { document.getElementById('div-wav-result').textContent = 'WAV A と WAV B の両方を選択してください。'; return; }
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
             try {
-                var res = await fetch(API.voice, { method: 'POST', body: fd });
-                if (!res.ok) throw new Error(apiErrorDetail(API.voice, res.status, null));
-                document.getElementById('vc-output').src = URL.createObjectURL(await res.blob());
-            } catch (e) { alert(e.message.indexOf('接続できませんでした') >= 0 ? e.message : apiErrorDetail(API.voice, null, e.message)); }
+                var bufA = await fetch(URL.createObjectURL(fa)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
+                var bufB = await fetch(URL.createObjectURL(fb)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
+                var p = spectrumToDistribution(bufA), q = spectrumToDistribution(bufB);
+                var out = {
+                    Jensen_squared: jensen_div(p, q, 'squared'),
+                    Bregman_squared: bregman(p, q, 'squared'),
+                    Bhattacharyya_discrete: bhattacharyya_disc(p, q)
+                };
+                document.getElementById('div-wav-result').textContent = JSON.stringify(out, null, 2);
+            } catch (e) { document.getElementById('div-wav-result').textContent = 'エラー: ' + e.message; }
         }
     </script>
 </body>
