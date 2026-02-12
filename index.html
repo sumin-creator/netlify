@@ -6,8 +6,19 @@
     <title>理論ダイバージェンスと音声分析｜Jensen · Bregman · Bhattacharyya</title>
     <meta name="description" content="Jensen / Bregman / Bhattacharyya など理論ダイバージェンスの数式と、WAV ファイルのブラウザ内分析・分布間ダイバージェンス計算。">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] } };</script>
+    <!-- MathJax は理論タブ初回表示時にのみ読み込み（重いため遅延） -->
+    <script>
+        window.MathJaxLoaded = false;
+        function loadMathJaxIfNeeded(callback) {
+            if (window.MathJaxLoaded) { if (callback) callback(); return; }
+            window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] } };
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+            s.async = true;
+            s.onload = function() { window.MathJaxLoaded = true; if (callback) callback(); };
+            document.head.appendChild(s);
+        }
+    </script>
     <style>
         :root {
             --bg-dark: #0b0f14;
@@ -497,7 +508,11 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if (el) el.classList.add('active');
-            if (window.MathJax && (id === 'divergence' || id === 'theory')) window.MathJax.typesetPromise && window.MathJax.typesetPromise().catch(function() {});
+            if (id === 'divergence' || id === 'theory') {
+                loadMathJaxIfNeeded(function() {
+                    if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise([document.getElementById(id)]).catch(function() {});
+                });
+            }
         }
         function parseJson(id, def) { try { return JSON.parse(document.getElementById(id).value || def); } catch (e) { return def; } }
 
@@ -634,15 +649,19 @@
         }
         function drawSpectrogramSimple(buffer, canvasId) {
             var canvas = document.getElementById(canvasId); if (!canvas || !buffer) return;
-            var ctx = canvas.getContext('2d'), w = canvas.width = canvas.offsetWidth, h = canvas.height;
-            var ch = buffer.getChannelData(0), sr = buffer.sampleRate, fftSize = 1024, hop = fftSize / 2;
+            var ctx = canvas.getContext('2d'), w = Math.min(512, canvas.offsetWidth || 400), h = Math.min(256, canvas.height || 200);
+            var ch = buffer.getChannelData(0), fftSize = 1024, hop = fftSize;
             var win = new Float32Array(fftSize); for (var i = 0; i < fftSize; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftSize - 1));
-            var nFrames = Math.floor((ch.length - fftSize) / hop) + 1, outW = Math.min(nFrames, Math.max(w, 400)), outH = Math.min(Math.floor(fftSize / 2), h || 200);
+            var nFrames = Math.floor((ch.length - fftSize) / hop) + 1;
+            var step = Math.max(1, Math.floor(nFrames / w));
+            var outW = Math.min(w, Math.ceil(nFrames / step)), outH = Math.floor(fftSize / 2);
             var mag = new Float32Array(outW * outH);
             for (var fi = 0; fi < outW; fi++) {
-                var start = fi * hop, re = new Float32Array(fftSize), im = new Float32Array(fftSize);
+                var start = (fi * step) * hop;
+                if (start + fftSize > ch.length) break;
+                var re = new Float32Array(fftSize), im = new Float32Array(fftSize);
                 for (var i = 0; i < fftSize; i++) { re[i] = ch[start + i] * win[i]; im[i] = 0; }
-                fft(re, im);
+                fftRadix2(re, im);
                 for (var k = 0; k < outH; k++) mag[fi + k * outW] = Math.sqrt(re[k] * re[k] + im[k] * im[k]);
             }
             var max = 0; for (var i = 0; i < mag.length; i++) if (mag[i] > max) max = mag[i];
@@ -653,19 +672,43 @@
             }
             canvas.width = outW; canvas.height = outH; ctx.putImageData(img, 0, 0);
         }
-        function fft(re, im) { var n = re.length; for (var k = 0; k < n; k++) { var sr = 0, si = 0; for (var t = 0; t < n; t++) { var angle = -2 * Math.PI * k * t / n; sr += re[t] * Math.cos(angle) - im[t] * Math.sin(angle); si += re[t] * Math.sin(angle) + im[t] * Math.cos(angle); } re[k] = sr; im[k] = si; } }
+        function fftRadix2(re, im) {
+            var n = re.length, i, j, k, len, half, t, ur, ui, wr, wi, tr, ti;
+            for (i = 0; i < n; i++) {
+                j = 0; for (k = 0; k < 10; k++) j = (j << 1) | ((i >> k) & 1);
+                if (j > i) { t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+            }
+            for (len = 2; len <= n; len *= 2) {
+                half = len / 2; var angle = -2 * Math.PI / len; wr = Math.cos(angle); wi = Math.sin(angle);
+                for (k = 0; k < n; k += len) {
+                    ur = 1; ui = 0;
+                    for (j = 0; j < half; j++) {
+                        tr = re[k + j + half] * ur - im[k + j + half] * ui;
+                        ti = re[k + j + half] * ui + im[k + j + half] * ur;
+                        re[k + j + half] = re[k + j] - tr; im[k + j + half] = im[k + j] - ti;
+                        re[k + j] += tr; im[k + j] += ti;
+                        t = ur * wr - ui * wi; ui = ur * wi + ui * wr; ur = t;
+                    }
+                }
+            }
+        }
         function demoSpectrum() { var el = document.getElementById('demo-spectrum-file'); if (el.files.length === 0) { alert('ファイルを選んでください'); return; } el.dispatchEvent(new Event('change')); }
 
         function spectrumToDistribution(buffer, bins) {
-            bins = bins || 64;
-            var ch = buffer.getChannelData(0), sr = buffer.sampleRate, fftSize = 1024, hop = fftSize / 2;
+            bins = bins || 32;
+            var ch = buffer.getChannelData(0), fftSize = 1024, hop = fftSize, maxFrames = 80;
             var win = new Float32Array(fftSize); for (var i = 0; i < fftSize; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftSize - 1));
             var hist = new Float32Array(bins);
             var nFrames = Math.floor((ch.length - fftSize) / hop) + 1;
-            for (var fi = 0; fi < nFrames; fi++) {
-                var start = fi * hop, re = new Float32Array(fftSize), im = new Float32Array(fftSize);
+            var step = Math.max(1, Math.floor(nFrames / maxFrames));
+            var count = 0;
+            for (var fi = 0; fi < nFrames && count < maxFrames; fi += step) {
+                count++;
+                var start = fi * hop;
+                if (start + fftSize > ch.length) break;
+                var re = new Float32Array(fftSize), im = new Float32Array(fftSize);
                 for (var i = 0; i < fftSize; i++) { re[i] = ch[start + i] * win[i]; im[i] = 0; }
-                fft(re, im);
+                fftRadix2(re, im);
                 for (var k = 0; k < Math.floor(fftSize / 2); k++) {
                     var mag = Math.sqrt(re[k] * re[k] + im[k] * im[k]);
                     var bin = Math.min(bins - 1, Math.floor((k / (fftSize / 2)) * bins));
