@@ -101,7 +101,8 @@ netlify/
 3. Build command: 空欄 / Publish directory: `.`  
 4. デプロイ  
 
-※ バックエンド API（research_api.py）は Netlify 上では動きません。フォルマント・F0・簡易変換はローカルで `python research_api.py` を実行した環境でのみ利用可能です。
+**Netlify 上でも API が使えます。** フォルマント合成・F0分析・簡易音声変換は **Netlify Functions**（`netlify/functions/formant_synthesize.py`, `f0_analyze.py`, `voice_convert.py`）としてデプロイされ、`index.html` はローカル時は `research_api.py`、Netlify 時は `/.netlify/functions/xxx` を自動で呼びます。  
+※ 初回や長時間未使用後の呼び出しはコールドスタートで数秒かかることがあります。
 
 ---
 

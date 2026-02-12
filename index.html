@@ -361,8 +361,12 @@
     </div>
 
     <script>
-        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000/api' : '/api';
+        var isLocal = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        var API = {
+            formant: isLocal ? 'http://localhost:5000/api/formant/synthesize' : '/.netlify/functions/formant_synthesize',
+            f0:       isLocal ? 'http://localhost:5000/api/f0/analyze'           : '/.netlify/functions/f0_analyze',
+            voice:    isLocal ? 'http://localhost:5000/api/voice/convert'        : '/.netlify/functions/voice_convert'
+        };
 
         function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -476,7 +480,7 @@
         async function demoFormant() {
             const f0 = document.getElementById('formant-f0').value;
             try {
-                const res = await fetch(API_BASE + '/formant/synthesize', {
+                const res = await fetch(API.formant, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ f0: parseInt(f0, 10), duration: 1.0 })
@@ -486,7 +490,7 @@
                 const url = URL.createObjectURL(blob);
                 document.getElementById('formant-audio').src = url;
             } catch (e) {
-                alert('APIに接続できません。research_api.py を起動してください。\n' + e.message);
+                alert('APIに接続できません。' + (isLocal ? 'research_api.py を起動してください。' : 'しばらく待ってから再試行してください。') + '\n' + e.message);
             }
         }
 
@@ -497,12 +501,12 @@
             const fd = new FormData();
             fd.append('audio', fileInput.files[0]);
             try {
-                const res = await fetch(API_BASE + '/f0/analyze', { method: 'POST', body: fd });
+                const res = await fetch(API.f0, { method: 'POST', body: fd });
                 if (!res.ok) throw new Error('API error ' + res.status);
                 const j = await res.json();
                 document.getElementById('f0-result').textContent = JSON.stringify(j, null, 2);
             } catch (e) {
-                document.getElementById('f0-result').textContent = 'エラー: ' + e.message + '\n（APIが起動しているか確認してください）';
+                document.getElementById('f0-result').textContent = 'エラー: ' + e.message + '\n' + (isLocal ? '（APIが起動しているか確認してください）' : '（NetlifyのFunctionsが有効か確認してください）');
             }
         }
 
@@ -516,12 +520,12 @@
             fd.append('type', 'pitch');
             fd.append('strength', (strength * 100).toString());
             try {
-                const res = await fetch(API_BASE + '/voice/convert', { method: 'POST', body: fd });
+                const res = await fetch(API.voice, { method: 'POST', body: fd });
                 if (!res.ok) throw new Error('API error ' + res.status);
                 const blob = await res.blob();
                 document.getElementById('vc-output').src = URL.createObjectURL(blob);
             } catch (e) {
-                alert('APIに接続できません。research_api.py を起動してください。\n' + e.message);
+                alert('APIに接続できません。' + (isLocal ? 'research_api.py を起動してください。' : 'しばらく待ってから再試行してください。') + '\n' + e.message);
             }
         }
     </script>

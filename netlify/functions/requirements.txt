@@ -1,0 +1,2 @@
+# 音声API（formant_synthesize, f0_analyze, voice_convert）で使用
+numpy>=1.20.0,<2
