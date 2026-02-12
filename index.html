@@ -655,6 +655,18 @@
             var expected = 2 * gamma * j;
             return { chord_gap: cg, '2*gamma*J_F': expected, diff: Math.abs(cg - expected) };
         }
+        function taylor_lagrange_bregman(p, q, Fname) {
+            var B_true = bregman(p, q, Fname);
+            var xi = p.map(function(_, i) { return (p[i] + q[i]) / 2 + eps; });
+            var quad;
+            if (Fname === 'squared') {
+                quad = p.reduce(function(s, v, i) { return s + (v - q[i]) * (v - q[i]); }, 0);
+            } else {
+                quad = p.reduce(function(s, v, i) { var d = p[i] - q[i]; return s + (d * d) / xi[i]; }, 0);
+            }
+            var Taylor_approx = Fname === 'squared' ? quad : 0.5 * quad;
+            return { Bregman_true: B_true, Taylor_Lagrange_approx: Taylor_approx, approximation_error: B_true - Taylor_approx };
+        }
         function chord_gap_centroid(points, weights, alpha, beta, gamma, maxIter, Fname) {
             Fname = Fname || 'squared';
             var wsum = weights.reduce(function(a, b) { return a + b; }, 0) + eps;
@@ -870,11 +882,16 @@
                 var JB = jensen_bregman(p, q, 0.5, 'squared');
                 var ga = 0.25; var gb = 0.75; var gg = 0.5;
                 var GenBhat = generalized_bhattacharyya_disc(p, q, ga, gb, gg);
+                var ga2 = 0.2; var gb2 = 0.5; var gg2 = 0.8;
+                var GenBhat2 = generalized_bhattacharyya_disc(p, q, ga2, gb2, gg2);
                 var bipartite = chord_gap_bipartite_check(p, q, 0.3, 'squared');
                 var Z05_sum = Z_delta_disc(p, q, 0.5);
                 var J05 = skew_jensen(p, q, 0.5, 'squared');
                 var Z05_exp = Math.exp(-J05);
-                var diffSq = p.reduce(function(s, v, i) { return s + (v - q[i]) * (v - q[i]); }, 0);
+                var taylorSq = taylor_lagrange_bregman(p, q, 'squared');
+                var taylorEnt = taylor_lagrange_bregman(p, q, 'entropy');
+                var centroidAB = chord_gap_centroid([p, q], [1, 1], 0, 0.5, 0.25, 20, 'squared');
+                var rho2 = B;
                 var lines = [];
                 lines.push('========== 理論1～6 計算結果（すべて表示） ==========');
                 lines.push('1. Jensen (Burbea–Rao)     =>  ' + J.toFixed(6));
@@ -886,10 +903,19 @@
                 lines.push('6. Jensen–Bregman (α=1/2) =>  ' + JB.toFixed(6));
                 lines.push('');
                 lines.push('========== トリパラメトリック・論文追加式 ==========');
-                lines.push('【Eq.11】一般化 Bhattacharyya Bhat^α,β,γ (α=' + ga + ',β=' + gb + ',γ=' + gg + ') =>  ' + GenBhat.toFixed(6));
+                lines.push('【Eq.11】三パラメータ族 Bhat^α,β,γ（理論5・8）:');
+                lines.push('  (α,β,γ)=(' + ga + ',' + gb + ',' + gg + ') =>  ' + GenBhat.toFixed(6));
+                lines.push('  (α,β,γ)=(' + ga2 + ',' + gb2 + ',' + gg2 + ') =>  ' + GenBhat2.toFixed(6));
                 lines.push('【Eq.8】二部サブファミリー β=1/2 整合性 (γ=0.3): J_F^{1/2,γ} = ' + bipartite.chord_gap.toFixed(6) + ',  2γJ_F = ' + bipartite['2*gamma*J_F'].toFixed(6) + ', 差 = ' + bipartite.diff.toFixed(6));
-                lines.push('【Eq.10】Z_δ=exp(-J_F^δ): Z_0.5(積分)= ' + Z05_sum.toFixed(6) + ',  exp(-J_F^0.5)= ' + Z05_exp.toFixed(6) + ' (離散では積分=Σp_i^0.5 q_i^0.5)');
-                lines.push('【Taylor–Lagrange】B_F(p:q) = ' + B.toFixed(6) + ',  (1/2)(p-q)^T H(p-q) ≈ ||p-q||^2 = ' + diffSq.toFixed(6) + ' (F=squared で一致)');
+                lines.push('【Eq.10】Z_δ=exp(-J_F^δ): Z_0.5(積分)= ' + Z05_sum.toFixed(6) + ',  exp(-J_F^0.5)= ' + Z05_exp.toFixed(6));
+                lines.push('');
+                lines.push('========== Taylor–Lagrange（理論3・9）Eq.(12)(13)(15) ==========');
+                lines.push('F=squared: Bregman真値 = ' + taylorSq.Bregman_true.toFixed(6) + ',  Taylor近似 = ' + taylorSq.Taylor_Lagrange_approx.toFixed(6) + ',  近似誤差 = ' + taylorSq.approximation_error.toFixed(6));
+                lines.push('F=entropy: Bregman真値 = ' + taylorEnt.Bregman_true.toFixed(6) + ',  Taylor近似 = ' + taylorEnt.Taylor_Lagrange_approx.toFixed(6) + ',  近似誤差 = ' + taylorEnt.approximation_error.toFixed(6));
+                lines.push('');
+                lines.push('========== セントロイド（理論10）§3.1 ==========');
+                lines.push('WAV A と WAV B の中間分布 x（Chord Gap 更新で算出）: 次元数=' + centroidAB.length + ', 先頭3ビン=[' + centroidAB.slice(0, 3).map(function(v) { return v.toFixed(4); }).join(',') + ']');
+                lines.push('データ広がり（2点）ρ≈D(p,q): Bregman = ' + rho2.toFixed(6) + '（論文 Eq.17 の指標は多点で利用）');
                 lines.push('');
                 lines.push('========== 計算過程 ==========');
                 lines.push('1) WAV A → パワースペクトル FFT → ビン数 ' + bins + ' のヒストグラム → 正規化して分布 p');
@@ -913,12 +939,23 @@
                     '4_Skew_Bhattacharyya': BhatHalf,
                     '5_Chord_Gap': CG,
                     '6_Jensen_Bregman': JB,
-                    'Eq11_Generalized_Bhattacharyya': GenBhat,
+                    'Bhat_alpha_beta_gamma': {
+                        'value_1': GenBhat,
+                        'alpha_1': ga,
+                        'beta_1': gb,
+                        'gamma_1': gg,
+                        'value_2': GenBhat2,
+                        'alpha_2': ga2,
+                        'beta_2': gb2,
+                        'gamma_2': gg2
+                    },
                     'Eq8_Bipartite': bipartite,
                     'Eq10_Z_half_integral': Z05_sum,
                     'Eq10_exp_neg_J_half': Z05_exp,
-                    'TaylorLagrange_B_F': B,
-                    'TaylorLagrange_squared_norm': diffSq
+                    'TaylorLagrange_F_squared': taylorSq,
+                    'TaylorLagrange_F_entropy': taylorEnt,
+                    'Centroid_WAV_A_B': centroidAB,
+                    'spread_2points_D_p_q': rho2
                 }, null, 2));
                 document.getElementById('div-wav-result').textContent = lines.join('\n');
             } catch (e) { document.getElementById('div-wav-result').textContent = 'エラー: ' + e.message; }
