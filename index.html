@@ -305,8 +305,8 @@
                 <audio id="demo-audio" controls style="margin-top:12px;"></audio>
             </div>
             <div class="panel" style="border-color: var(--accent);">
-                <h3>📐 2つの WAV を数式で比較（論文の式をそのまま適用）</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">WAV を読み込むと、パワースペクトルから正規化分布 $p,\,q$ を抽出し、<strong>論文の式</strong>（Jensen, Bregman, JB, Bhattacharyya, スキュー Bhattacharyya, Chord Gap）をブラウザ内で適用します。計算過程も表示します。</p>
+                <h3>📐 2つの WAV のダイバージェンス比較（理論 1～6 をすべて実装）</h3>
+                <p style="margin-bottom:12px; color: var(--text-muted);">WAV を読み込むと、パワースペクトルから正規化分布 $p,q$ を抽出し、<strong>理論タブの 1～6 の式をすべて</strong>ブラウザ内で適用します。結果は【理論1】～【理論6】でどの式か対応付けして表示します。</p>
                 <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV A: <input type="file" id="div-wav-a" accept="audio/wav,audio/*"> <span id="div-wav-a-label">未選択</span></p>
                 <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV B: <input type="file" id="div-wav-b" accept="audio/wav,audio/*"> <span id="div-wav-b-label">未選択</span></p>
                 <button onclick="runDivergenceFromWav()">数式でダイバージェンス計算</button>
@@ -770,34 +770,45 @@
                 var bufB = await fetch(URL.createObjectURL(fb)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
                 var p = spectrumToDistribution(bufA), q = spectrumToDistribution(bufB);
                 var bins = p.length;
+                var J = jensen_div(p, q, 'squared');
+                var SkewJ = skew_jensen(p, q, 0.5, 'squared');
+                var B = bregman(p, q, 'squared');
+                var Bhat = bhattacharyya_disc(p, q);
+                var BhatHalf = skew_bhattacharyya_disc(p, q, 0.5);
+                var CG = chord_gap(p, q, 0, 0.5, 0.25, 'squared');
+                var JB = jensen_bregman(p, q, 0.5, 'squared');
                 var lines = [];
-                lines.push('========== 計算過程（論文の式に従う） ==========');
+                lines.push('========== 理論1～6 計算結果（すべて表示） ==========');
+                lines.push('1. Jensen (Burbea–Rao)     =>  ' + J.toFixed(6));
+                lines.push('2. スキュー Jensen (α=1/2)  =>  ' + SkewJ.toFixed(6));
+                lines.push('3. Bregman                 =>  ' + B.toFixed(6));
+                lines.push('4. Bhattacharyya (離散)    =>  ' + Bhat.toFixed(6));
+                lines.push('4. スキュー Bhattacharyya (α=1/2) =>  ' + BhatHalf.toFixed(6));
+                lines.push('5. Chord Gap (α=0,β=0.5,γ=0.25) =>  ' + CG.toFixed(6));
+                lines.push('6. Jensen–Bregman (α=1/2) =>  ' + JB.toFixed(6));
+                lines.push('');
+                lines.push('========== 計算過程 ==========');
                 lines.push('1) WAV A → パワースペクトル FFT → ビン数 ' + bins + ' のヒストグラム → 正規化して分布 p');
                 lines.push('2) WAV B → 同様に分布 q');
-                lines.push('3) 以下、すべて F=squared（ユークリッド）で計算。');
+                lines.push('3) F=squared（ユークリッド）で上記1～6の式を適用。');
                 lines.push('');
-                lines.push('--- 適用した数式と結果 ---');
-                var J = jensen_div(p, q, 'squared');
-                lines.push('Jensen (Burbea–Rao): J_F(p,q) = (F(p)+F(q))/2 - F((p+q)/2)  =>  ' + J.toFixed(6));
-                var B = bregman(p, q, 'squared');
-                lines.push('Bregman: B_F(p:q) = F(p)-F(q)-(p-q)^T ∇F(q)  =>  ' + B.toFixed(6));
-                var JB = jensen_bregman(p, q, 0.5, 'squared');
-                lines.push('Jensen–Bregman (α=1/2): JB_F^α(p|q) = (1-α)B_F(p:(pq)_α)+α B_F(q:(pq)_α)  =>  ' + JB.toFixed(6));
-                var Bhat = bhattacharyya_disc(p, q);
-                lines.push('Bhattacharyya (離散): -log Σ√(p_i q_i)  =>  ' + Bhat.toFixed(6));
-                var BhatHalf = skew_bhattacharyya_disc(p, q, 0.5);
-                lines.push('スキュー Bhattacharyya (α=1/2, 論文 Eq.4): -log Σ p_i^(1-α) q_i^α  =>  ' + BhatHalf.toFixed(6));
-                var CG = chord_gap(p, q, 0, 0.5, 0.25, 'squared');
-                lines.push('Chord Gap (α=0, β=0.5, γ=0.25, 論文 Eq.7): J_F^γ(p:q) - J_F^λ((pq)_α:(pq)_β), λ=(γ-α)/(β-α)  =>  ' + CG.toFixed(6));
+                lines.push('========== 数式との対応 ==========');
+                lines.push('【理論1】 J_F(p,q) = (F(p)+F(q))/2 - F((p+q)/2)');
+                lines.push('【理論2】 J_F^α(p:q) = (1-α)F(p)+αF(q)-F((1-α)p+αq)');
+                lines.push('【理論3】 B_F(p:q) = F(p)-F(q)-(p-q)^T ∇F(q)');
+                lines.push('【理論4】 Bhattacharyya: -log Σ√(p_i q_i) / スキュー: -log Σ p_i^(1-α)q_i^α');
+                lines.push('【理論5】 J_F^γ(p:q) - J_F^λ((pq)_α:(pq)_β)');
+                lines.push('【理論6】 JB_F^α(p|q) = (1-α)B_F(p:(pq)_α)+αB_F(q:(pq)_α)');
                 lines.push('');
-                lines.push('========== 数値まとめ ==========');
+                lines.push('========== JSON ==========');
                 lines.push(JSON.stringify({
-                    Jensen_squared: J,
-                    Bregman_squared: B,
-                    Jensen_Bregman_alpha_half: JB,
-                    Bhattacharyya_discrete: Bhat,
-                    Skew_Bhattacharyya_alpha_half: BhatHalf,
-                    Chord_Gap_alpha0_beta0_5_gamma0_25: CG
+                    '1_Jensen': J,
+                    '2_Skew_Jensen': SkewJ,
+                    '3_Bregman': B,
+                    '4_Bhattacharyya': Bhat,
+                    '4_Skew_Bhattacharyya': BhatHalf,
+                    '5_Chord_Gap': CG,
+                    '6_Jensen_Bregman': JB
                 }, null, 2));
                 document.getElementById('div-wav-result').textContent = lines.join('\n');
             } catch (e) { document.getElementById('div-wav-result').textContent = 'エラー: ' + e.message; }
