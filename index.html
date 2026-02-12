@@ -275,13 +275,15 @@
                 <h3>📈 F0分析（API）</h3>
                 <p style="margin-bottom:12px; color: var(--text-muted);">音声変換の前処理として重要な基本周波数（ピッチ）軌跡を推定します。</p>
                 <input type="file" id="demo-f0-file" accept="audio/wav,audio/*">
+                <span id="demo-f0-file-label" style="display:inline-block; margin-left:8px; color: var(--text-muted); font-size:0.9rem;">ファイルが選択されていません</span>
                 <button onclick="demoF0()">F0分析</button>
                 <pre id="f0-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.85rem; overflow:auto;"></pre>
             </div>
             <div class="panel">
                 <h3>🔄 簡易音声変換（API）</h3>
-                <div class="impl-note warn">CycleGAN-VC / StarGAN-VC の「本物」は学習済みモデルが必要です。ここではピッチシフト等の簡易デモを提供しています。</div>
+                <div class="impl-note warn" style="margin-bottom:12px;">CycleGAN-VC / StarGAN-VC の「本物」は学習済みモデルが必要です。ここではピッチシフト等の簡易デモを提供しています。</div>
                 <input type="file" id="demo-vc-file" accept="audio/wav,audio/*">
+                <span id="demo-vc-file-label" style="display:inline-block; margin-left:8px; color: var(--text-muted); font-size:0.9rem;">ファイルが選択されていません</span>
                 <label>変換強度 (0–100%)</label>
                 <input type="range" id="demo-vc-strength" min="0" max="100" value="50">
                 <button onclick="demoSimpleVC()">簡易変換して再生</button>
@@ -662,6 +664,13 @@
         function fft(re, im) { var n = re.length; for (var k = 0; k < n; k++) { var sr = 0, si = 0; for (var t = 0; t < n; t++) { var angle = -2 * Math.PI * k * t / n; sr += re[t] * Math.cos(angle) - im[t] * Math.sin(angle); si += re[t] * Math.sin(angle) + im[t] * Math.cos(angle); } re[k] = sr; im[k] = si; } }
         function demoSpectrum() { var el = document.getElementById('demo-spectrum-file'); if (el.files.length === 0) { alert('ファイルを選んでください'); return; } el.dispatchEvent(new Event('change')); }
         document.getElementById('formant-f0').oninput = function() { document.getElementById('formant-f0-val').textContent = this.value; };
+        function updateFileLabel(inputId, labelId) {
+            var input = document.getElementById(inputId), label = document.getElementById(labelId);
+            if (!input || !label) return;
+            label.textContent = input.files[0] ? input.files[0].name : 'ファイルが選択されていません';
+        }
+        document.getElementById('demo-f0-file').onchange = function() { updateFileLabel('demo-f0-file', 'demo-f0-file-label'); };
+        document.getElementById('demo-vc-file').onchange = function() { updateFileLabel('demo-vc-file', 'demo-vc-file-label'); };
         async function demoFormant() {
             try {
                 var res = await fetch(API.formant, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ f0: parseInt(document.getElementById('formant-f0').value, 10), duration: 1.0 }) });
