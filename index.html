@@ -223,10 +223,10 @@
                 <div class="math-block">$$B_F(p|q) = \frac{1}{2}(p-q)^\top \nabla^2 F(\xi)\,(p-q).$$</div>
             </div>
             <div class="panel">
-                <h3>4. 統計的距離：Bhattacharyya と KL</h3>
-                <p style="color: var(--text-muted); margin-bottom: 8px;">分布 $p(x), q(x)$ に対するスキュー Bhattacharyya と Kullback–Leibler:</p>
+                <h3>4. 統計的距離：Bhattacharyya と KL — 論文 Eq.(4)(5)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">分布 $p(x), q(x)$ に対するスキュー Bhattacharyya（Eq.(4)）と Kullback–Leibler:</p>
                 <div class="math-block">$$\mathrm{Bhat}_\alpha(p : q) = -\log \int p(x)^{1-\alpha} q(x)^\alpha \,dx, \qquad \mathrm{KL}(p\|q) = \int p(x) \log \frac{p(x)}{q(x)}\,dx.$$</div>
-                <p style="color: var(--text-muted);">離散分布では $\mathrm{Bhat}(p\|q) = -\log \sum_i \sqrt{p_i q_i}$。指数族ではパラメータ空間上で Jensen / Bregman と対応します。</p>
+                <p style="color: var(--text-muted); font-size:0.9rem;">離散分布での計算: $\mathrm{Bhat}_\alpha(p:q) = -\log \sum_i p_i^{1-\alpha} q_i^\alpha$。$\alpha=1/2$ のとき $\mathrm{Bhat}(p\|q) = -\log \sum_i \sqrt{p_i q_i}$。指数族では Eq.(5) により $\mathrm{Bhat}(p(\cdot;\theta_1):p(\cdot;\theta_2)) = J_F^\alpha(\theta_1:\theta_2)$ と Jensen に対応します。</p>
             </div>
             <div class="panel">
                 <h3>5. Chord Gap ダイバージェンス（三パラメータ族）</h3>
@@ -235,13 +235,42 @@
                 <p style="color: var(--text-muted);">一般化 Bhattacharyya は三パラメータ族 $\mathrm{Bhat}_{\alpha,\beta,\gamma}(\theta_p : \theta_q)$ として定義され、$\alpha=\beta$ のとき従来のスキュー Bhattacharyya に帰着。</p>
             </div>
             <div class="panel">
-                <h3>6. Skew Jensen–Bregman (JB)</h3>
-                <p style="color: var(--text-muted); margin-bottom: 8px;">二つの Bregman の重み付き和:</p>
+                <h3>6. Skew Jensen–Bregman (JB) — 論文 Eq.(14)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">二つの Bregman の重み付き和。スキュー Jensen と一致: $\mathrm{JB}_F^\alpha = J_F^\alpha$。</p>
                 <div class="math-block">$$\mathrm{JB}_F^\alpha(p|q) = (1-\alpha) B_F(p : (pq)_\alpha) + \alpha B_F(q : (pq)_\alpha).$$</div>
+                <p style="color: var(--text-muted); font-size:0.9rem;">計算過程: $(pq)_\alpha = (1-\alpha)p + \alpha q$ を中点とし、$p$ と $(pq)_\alpha$ の Bregman、$q$ と $(pq)_\alpha$ の Bregman をそれぞれ重み $(1-\alpha)$, $\alpha$ で足す。</p>
+            </div>
+            <div class="panel">
+                <h3>7. スキュー Bhattacharyya — 論文 Eq.(4)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">分布に対するスキュー Bhattacharyya。指数族ではパラメータのスキュー Jensen と一致（Eq.(5)）。</p>
+                <div class="math-block">$$\mathrm{Bhat}_\alpha(p : q) = -\log \int p(x)^{1-\alpha} q(x)^\alpha \,dx.$$</div>
+                <p style="color: var(--text-muted); font-size:0.9rem;">離散分布での計算: $\mathrm{Bhat}_\alpha(p:q) = -\log \sum_i p_i^{1-\alpha} q_i^\alpha$。$\alpha=1/2$ のとき従来の Bhattacharyya。</p>
+            </div>
+            <div class="panel">
+                <h3>8. Chord Gap（三パラメータ）— 論文 Eq.(6)(7)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">上弦 $U$: $(p,F(p))$–$(q,F(q))$、下弦 $L$: $((pq)_\alpha,F((pq)_\alpha))$–$((pq)_\beta,F((pq)_\beta))$。$((pq)_\gamma)$ での垂直ギャップが Chord Gap。</p>
+                <div class="math-block">$$J_F^{\alpha,\beta,\gamma}(p:q) = (F(p)F(q))_\gamma - \bigl(F((pq)_\alpha)\,F((pq)_\beta)\bigr)_\lambda, \quad \lambda = \frac{\gamma-\alpha}{\beta-\alpha}\;\;(\alpha\neq\beta).$$</div>
+                <div class="math-block">$$J_F^{\alpha,\beta,\gamma}(p:q) = J_F^\gamma(p:q) - J_F^\lambda\bigl((pq)_\alpha : (pq)_\beta\bigr).$$</div>
+                <p style="color: var(--text-muted); font-size:0.9rem;">計算過程: まず $J_F^\gamma(p:q)$ をスキュー Jensen で計算。次に $(pq)_\alpha$, $(pq)_\beta$ を求め、$J_F^\lambda((pq)_\alpha:(pq)_\beta)$ を計算。その差が Chord Gap。</p>
+            </div>
+            <div class="panel">
+                <h3>9. Bregman の Taylor–Lagrange 形 — 論文 Eq.(12)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">中間点 $\xi \in [p,q]$ でヘッセ $\nabla^2 F(\xi)$ を用いた二次形式。マハラノビス距離の二乗と解釈可能。</p>
+                <div class="math-block">$$B_F(p|q) = \frac{1}{2}(p-q)^\top \nabla^2 F(\xi)\,(p-q).$$</div>
+            </div>
+            <div class="panel">
+                <h3>10. セントロイドと k-means++ — 論文 §3</h3>
+                <p style="color: var(--text-muted); margin-bottom: 8px;">重み付き点集合 $P=\{(w_i,p_i)\}$ に対する Chord Gap セントロイドは、凸関数の差 $\min_x A(x)-B(x)$ の最小化。反復更新（DCCP）:</p>
+                <div class="math-block">$$x_{t+1} = (\nabla F)^{-1}\Bigl(\sum_i w_i \bigl((1-\lambda)\alpha\nabla F((p_i x_t)_\alpha) + \lambda\beta\nabla F((p_i x_t)_\beta)\bigr)\Bigr).$$</div>
+                <p style="color: var(--text-muted); font-size:0.9rem;">$F$ が squared のときセントロイドは重み付き平均の閉形式。k-means++ は $D^2$ に比例する確率で初期シードをサンプリングし、$U$-三角不等式 $D(x:z)\leq U(D(x:y)+D(y:z))$ のとき競合比 $O(\log k)$ を保証（論文 Eq.(17)）。</p>
+            </div>
+            <div class="panel">
+                <h3>本サイトでの実装対応</h3>
+                <p style="color: var(--text-muted); font-size:0.9rem;">上記の式はすべて「ダイバージェンス計算」タブで数値入力により計算でき、「WAV 分析」の「2つの WAV のダイバージェンス比較」では、WAV からパワースペクトル分布 $p,q$ を抽出したうえで同じ式を適用しています。$F$ は squared / entropy を選択可能です。</p>
             </div>
             <div class="panel paper-ref">
                 <h4>参考文献</h4>
-                <p><strong>Frank Nielsen</strong>, "The chord gap divergence and a generalization of the Bhattacharyya distance," École Polytechnique &amp; Sony CSL. <a href="https://www.lix.polytechnique.fr/~nielsen/CGD/" target="_blank" rel="noopener" style="color: var(--accent);">lix.polytechnique.fr/~nielsen/CGD/</a></p>
+                <p><strong>Frank Nielsen</strong>, "The chord gap divergence and a generalization of the Bhattacharyya distance," École Polytechnique &amp; Sony CSL. Index terms: Jensen/Burbea–Rao divergence, Bregman divergence, centroid, k-means++. 再現コード: <a href="https://www.lix.polytechnique.fr/~nielsen/CGD/" target="_blank" rel="noopener" style="color: var(--accent);">lix.polytechnique.fr/~nielsen/CGD/</a></p>
             </div>
         </div>
 
@@ -276,12 +305,12 @@
                 <audio id="demo-audio" controls style="margin-top:12px;"></audio>
             </div>
             <div class="panel" style="border-color: var(--accent);">
-                <h3>📐 2つの WAV のダイバージェンス比較</h3>
-                <p style="margin-bottom:12px; color: var(--text-muted);">2つの WAV を読み込むと、それぞれのパワースペクトルから正規化分布 $p,\,q$ を求め、<strong>Jensen</strong>・<strong>Bregman</strong>・<strong>Bhattacharyya</strong>（離散）をブラウザ内で計算します。理論タブの数式と対応しています。</p>
+                <h3>📐 2つの WAV を数式で比較（論文の式をそのまま適用）</h3>
+                <p style="margin-bottom:12px; color: var(--text-muted);">WAV を読み込むと、パワースペクトルから正規化分布 $p,\,q$ を抽出し、<strong>論文の式</strong>（Jensen, Bregman, JB, Bhattacharyya, スキュー Bhattacharyya, Chord Gap）をブラウザ内で適用します。計算過程も表示します。</p>
                 <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV A: <input type="file" id="div-wav-a" accept="audio/wav,audio/*"> <span id="div-wav-a-label">未選択</span></p>
                 <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV B: <input type="file" id="div-wav-b" accept="audio/wav,audio/*"> <span id="div-wav-b-label">未選択</span></p>
-                <button onclick="runDivergenceFromWav()">ダイバージェンス計算</button>
-                <pre id="div-wav-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.9rem; overflow:auto; min-height:80px;"></pre>
+                <button onclick="runDivergenceFromWav()">数式でダイバージェンス計算</button>
+                <pre id="div-wav-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.85rem; overflow:auto; min-height:80px; white-space:pre-wrap;"></pre>
             </div>
         </div>
 
@@ -377,7 +406,7 @@
                         <pre id="out-bhat" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
                     </div>
                     <div>
-                        <strong>Chord gap（二パラメータ）</strong> — p, q, β, γ: <input type="text" id="d-chord-p" placeholder="[0,0]" style="width:60px"> <input type="text" id="d-chord-q" placeholder="[1,1]" style="width:60px"> <input type="number" id="d-chord-beta" value="0.3" min="0.01" max="0.99" step="0.05" style="width:50px"> <input type="number" id="d-chord-gamma" value="0.5" min="0.01" max="0.99" step="0.05" style="width:50px">
+                        <strong>Chord gap（論文 Eq.7 三パラメータ）</strong> — p, q, α, β, γ: <input type="text" id="d-chord-p" placeholder="[0,0]" style="width:60px"> <input type="text" id="d-chord-q" placeholder="[1,1]" style="width:60px"> <input type="number" id="d-chord-alpha" value="0" min="0" max="0.99" step="0.1" style="width:50px" title="α"> <input type="number" id="d-chord-beta" value="0.3" min="0.01" max="0.99" step="0.05" style="width:50px" title="β"> <input type="number" id="d-chord-gamma" value="0.5" min="0.01" max="0.99" step="0.05" style="width:50px" title="γ">
                         <button onclick="calcChordGap()">計算</button>
                         <pre id="out-chord" style="margin-top:6px; font-size:0.85rem; min-height:40px;"></pre>
                     </div>
@@ -558,13 +587,24 @@
             bc = Math.max(eps, Math.min(1, bc));
             return -Math.log(bc);
         }
-        function chord_gap(p, q, beta, gamma, Fname) {
-            var alpha = Math.max(eps, Math.min(1 - eps, gamma));
-            var j1 = skew_jensen(p, q, alpha, Fname);
-            var pq_a = p.map(function(_, i) { return (1 - alpha) * p[i] + alpha * q[i]; });
-            var pq_s = p.map(function(_, i) { return (1 - beta) * p[i] + beta * q[i]; });
-            var j2 = skew_jensen(pq_a, pq_s, 0.5, Fname);
+        function chord_gap(p, q, alpha, beta, gamma, Fname) {
+            alpha = Math.max(eps, Math.min(1 - eps, alpha));
+            beta = Math.max(eps, Math.min(1 - eps, beta));
+            gamma = Math.max(eps, Math.min(1 - eps, gamma));
+            var pq_alpha = p.map(function(_, i) { return (1 - alpha) * p[i] + alpha * q[i]; });
+            var pq_beta = p.map(function(_, i) { return (1 - beta) * p[i] + beta * q[i]; });
+            var j1 = skew_jensen(p, q, gamma, Fname);
+            var lambda = (Math.abs(beta - alpha) < eps) ? 0.5 : (gamma - alpha) / (beta - alpha);
+            lambda = Math.max(eps, Math.min(1 - eps, lambda));
+            var j2 = skew_jensen(pq_alpha, pq_beta, lambda, Fname);
             return j1 - j2;
+        }
+        function skew_bhattacharyya_disc(p, q, alpha) {
+            alpha = Math.max(eps, Math.min(1 - eps, alpha));
+            var sp = p.reduce(function(a, b) { return a + b; }, 0) + eps, sq = q.reduce(function(a, b) { return a + b; }, 0) + eps;
+            var pp = p.map(function(v) { return Math.max(eps, v / sp); }), qq = q.map(function(v) { return Math.max(eps, v / sq); });
+            var sum = pp.reduce(function(s, v, i) { return s + Math.pow(v, 1 - alpha) * Math.pow(qq[i], alpha); }, 0);
+            return -Math.log(Math.max(eps, sum));
         }
         function centroid(points, weights) {
             var wsum = weights.reduce(function(a, b) { return a + b; }, 0) + eps;
@@ -592,8 +632,8 @@
             document.getElementById('out-bhat').textContent = JSON.stringify({ Bhattacharyya_distance_gaussian: bhattacharyya_gauss(m1, v1, m2, v2) }, null, 2);
         }
         function calcChordGap() {
-            var p = parseJson('d-chord-p', '[0,0]'), q = parseJson('d-chord-q', '[1,1]'), beta = parseFloat(document.getElementById('d-chord-beta').value), gamma = parseFloat(document.getElementById('d-chord-gamma').value);
-            document.getElementById('out-chord').textContent = JSON.stringify({ 'J_F^{beta,gamma}(p:q)': chord_gap(p, q, beta, gamma, 'squared') }, null, 2);
+            var p = parseJson('d-chord-p', '[0,0]'), q = parseJson('d-chord-q', '[1,1]'), alpha = parseFloat(document.getElementById('d-chord-alpha').value) || 0, beta = parseFloat(document.getElementById('d-chord-beta').value), gamma = parseFloat(document.getElementById('d-chord-gamma').value);
+            document.getElementById('out-chord').textContent = JSON.stringify({ 'J_F^{α,β,γ}(p:q)': chord_gap(p, q, alpha, beta, gamma, 'squared') }, null, 2);
         }
         function calcJB() {
             var p = parseJson('d-jb-p', '[1,1]'), q = parseJson('d-jb-q', '[2,2]'), alpha = parseFloat(document.getElementById('d-jb-a').value);
@@ -725,15 +765,41 @@
             if (!fa || !fb) { document.getElementById('div-wav-result').textContent = 'WAV A と WAV B の両方を選択してください。'; return; }
             var ctx = new (window.AudioContext || window.webkitAudioContext)();
             try {
+                document.getElementById('div-wav-result').textContent = '読み込み中…';
                 var bufA = await fetch(URL.createObjectURL(fa)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
                 var bufB = await fetch(URL.createObjectURL(fb)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
                 var p = spectrumToDistribution(bufA), q = spectrumToDistribution(bufB);
-                var out = {
-                    Jensen_squared: jensen_div(p, q, 'squared'),
-                    Bregman_squared: bregman(p, q, 'squared'),
-                    Bhattacharyya_discrete: bhattacharyya_disc(p, q)
-                };
-                document.getElementById('div-wav-result').textContent = JSON.stringify(out, null, 2);
+                var bins = p.length;
+                var lines = [];
+                lines.push('========== 計算過程（論文の式に従う） ==========');
+                lines.push('1) WAV A → パワースペクトル FFT → ビン数 ' + bins + ' のヒストグラム → 正規化して分布 p');
+                lines.push('2) WAV B → 同様に分布 q');
+                lines.push('3) 以下、すべて F=squared（ユークリッド）で計算。');
+                lines.push('');
+                lines.push('--- 適用した数式と結果 ---');
+                var J = jensen_div(p, q, 'squared');
+                lines.push('Jensen (Burbea–Rao): J_F(p,q) = (F(p)+F(q))/2 - F((p+q)/2)  =>  ' + J.toFixed(6));
+                var B = bregman(p, q, 'squared');
+                lines.push('Bregman: B_F(p:q) = F(p)-F(q)-(p-q)^T ∇F(q)  =>  ' + B.toFixed(6));
+                var JB = jensen_bregman(p, q, 0.5, 'squared');
+                lines.push('Jensen–Bregman (α=1/2): JB_F^α(p|q) = (1-α)B_F(p:(pq)_α)+α B_F(q:(pq)_α)  =>  ' + JB.toFixed(6));
+                var Bhat = bhattacharyya_disc(p, q);
+                lines.push('Bhattacharyya (離散): -log Σ√(p_i q_i)  =>  ' + Bhat.toFixed(6));
+                var BhatHalf = skew_bhattacharyya_disc(p, q, 0.5);
+                lines.push('スキュー Bhattacharyya (α=1/2, 論文 Eq.4): -log Σ p_i^(1-α) q_i^α  =>  ' + BhatHalf.toFixed(6));
+                var CG = chord_gap(p, q, 0, 0.5, 0.25, 'squared');
+                lines.push('Chord Gap (α=0, β=0.5, γ=0.25, 論文 Eq.7): J_F^γ(p:q) - J_F^λ((pq)_α:(pq)_β), λ=(γ-α)/(β-α)  =>  ' + CG.toFixed(6));
+                lines.push('');
+                lines.push('========== 数値まとめ ==========');
+                lines.push(JSON.stringify({
+                    Jensen_squared: J,
+                    Bregman_squared: B,
+                    Jensen_Bregman_alpha_half: JB,
+                    Bhattacharyya_discrete: Bhat,
+                    Skew_Bhattacharyya_alpha_half: BhatHalf,
+                    Chord_Gap_alpha0_beta0_5_gamma0_25: CG
+                }, null, 2));
+                document.getElementById('div-wav-result').textContent = lines.join('\n');
             } catch (e) { document.getElementById('div-wav-result').textContent = 'エラー: ' + e.message; }
         }
     </script>
