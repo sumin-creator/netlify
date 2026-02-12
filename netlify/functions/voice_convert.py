@@ -53,6 +53,16 @@ def parse_multipart(body_bytes, boundary):
             fields[name] = content.decode('utf-8', errors='replace') if isinstance(content, bytes) else content
     return fields, files
 
+def extract_boundary(content_type):
+    """Content-Type 文字列から boundary を大小文字を保持したまま取り出す。"""
+    if not content_type:
+        return None
+    for part in content_type.split(';'):
+        p = part.strip()
+        if p.lower().startswith('boundary='):
+            return p[len('boundary='):].strip().strip('"').replace('\r', '')
+    return None
+
 def read_wav_bytes(data):
     """WAV バイト列から (sample_rate, samples_float32)"""
     if len(data) < 44:
@@ -120,17 +130,12 @@ def handler(event, context):
         body_bytes = raw.encode('utf-8') if isinstance(raw, str) else raw
 
     ct = (event.get('headers') or {}).get('content-type') or (event.get('headers') or {}).get('Content-Type') or ''
-    boundary = None
-    for part in ct.split(';'):
-        part = part.strip().lower()
-        if part.startswith('boundary='):
-            boundary = part[9:].strip().strip('"')
-            break
+    boundary = extract_boundary(ct)
     if not boundary:
         return {
             'statusCode': 400,
             'headers': {**headers, 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': '音声ファイルが必要です'}, ensure_ascii=False)
+            'body': json.dumps({'error': '音声ファイルが必要です', 'content_type': ct}, ensure_ascii=False)
         }
     boundary = boundary.replace('\r', '').strip()
 

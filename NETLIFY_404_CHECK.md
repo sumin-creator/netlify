@@ -1,5 +1,19 @@
 # formant_synthesize 404 の確認チェックリスト
 
+## 404 が続くとき（最優先でやること）
+
+1. **Netlify** → 対象サイト → **Site configuration** → **Build & deploy** → **Build settings**
+2. **Base directory**
+   - GitHub のリポジトリで **このプロジェクトが `netlify` というフォルダの中に入っている**（親フォルダがある）→ **`netlify`** と入力して保存。
+   - リポジトリのルートがこのプロジェクトだけ（中身が netlify.toml や index.html から始まる）→ **空のまま**でよい。
+3. **Functions directory**（Build settings の「Functions」または「Advanced」内）
+   - **`netlify/functions`** と明示して保存。未設定のままでも netlify.toml の値が使われますが、UI で別の値になっていると 404 の原因になります。
+4. **Clear cache and deploy site** で再デプロイする。
+5. **Deploys** → 最新のデプロイ → **Deploy log** を開き、`Packaging Functions` や `formant_synthesize` が出ているか確認。
+6. **Functions** タブを開き、一覧に **formant_synthesize** があるか確認。なければビルドログに Python のエラーがないか確認。
+
+---
+
 ## 1. 確認結果（ローカルで判明していること）
 
 ### リポジトリのルート

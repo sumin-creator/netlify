@@ -1,3 +1,5 @@
+# 404 になる場合: Netlify UI の Build settings で Base directory を確認
+# （リポジトリでこのプロジェクトが netlify/ サブフォルダなら Base directory = "netlify" にすること）
 [build]
   publish = "."
   functions = "netlify/functions"
