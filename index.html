@@ -328,6 +328,16 @@
                 <p style="margin-bottom:12px; font-size:0.9rem; color: var(--text-muted);">WAV B: <input type="file" id="div-wav-b" accept="audio/wav,audio/*"> <span id="div-wav-b-label">未選択</span></p>
                 <button onclick="runDivergenceFromWav()">数式でダイバージェンス計算</button>
                 <pre id="div-wav-result" style="margin-top:12px; padding:12px; background:#0f172a; border-radius:8px; font-size:0.85rem; overflow:auto; min-height:80px; white-space:pre-wrap;"></pre>
+                <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+                    <h4 style="margin-bottom:8px;">🔊 中間音（Chord Gap セントロイド）</h4>
+                    <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom:10px;">理論10の反復更新で求めた「WAV A と WAV B の幾何学的な中間」スペクトルを逆FFTで音に戻します。同じ WAV A/B を選んでから実行してください。</p>
+                    <button onclick="runCentroidAudio()">中間音を生成して再生</button>
+                    <span id="div-centroid-audio-msg" style="margin-left:10px; font-size:0.9rem; color: var(--text-muted);"></span>
+                    <div style="margin-top:10px;">
+                        <audio id="centroid-audio" controls style="max-width:100%;"></audio>
+                        <span style="margin-left:8px;"><a id="centroid-download" href="#" download="chord_gap_centroid.wav" style="color: var(--accent);">WAV をダウンロード</a></span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -835,6 +845,33 @@
                 }
             }
         }
+        function ifftRadix2(re, im) {
+            var n = re.length, i;
+            for (i = 0; i < n; i++) im[i] = -im[i];
+            fftRadix2(re, im);
+            for (i = 0; i < n; i++) { re[i] /= n; im[i] = -im[i] / n; }
+        }
+        function centroidToAudio(x, bins, fftSize) {
+            fftSize = fftSize || 1024;
+            var half = fftSize / 2;
+            var step = half / bins;
+            var re = new Float32Array(fftSize), im = new Float32Array(fftSize);
+            for (var k = 0; k < half; k++) {
+                var b = Math.min(bins - 1, Math.floor(k / step));
+                re[k] = (k === 0 ? 0 : x[b]);
+                im[k] = 0;
+            }
+            re[half] = x[bins - 1];
+            im[half] = 0;
+            for (var k = half + 1; k < fftSize; k++) {
+                re[k] = re[fftSize - k];
+                im[k] = 0;
+            }
+            ifftRadix2(re, im);
+            var out = new Float32Array(fftSize);
+            for (var i = 0; i < fftSize; i++) out[i] = re[i];
+            return out;
+        }
         function demoSpectrum() { var el = document.getElementById('demo-spectrum-file'); if (el.files.length === 0) { alert('ファイルを選んでください'); return; } el.dispatchEvent(new Event('change')); }
 
         function spectrumToDistribution(buffer, bins) {
@@ -863,6 +900,64 @@
         }
         document.getElementById('div-wav-a').onchange = function() { document.getElementById('div-wav-a-label').textContent = this.files[0] ? this.files[0].name : '未選択'; };
         document.getElementById('div-wav-b').onchange = function() { document.getElementById('div-wav-b-label').textContent = this.files[0] ? this.files[0].name : '未選択'; };
+        function float32ToWavBlob(samples, sampleRate) {
+            var numChannels = 1;
+            var bitsPerSample = 16;
+            var blockAlign = numChannels * (bitsPerSample / 8);
+            var byteRate = sampleRate * blockAlign;
+            var dataSize = samples.length * (bitsPerSample / 8);
+            var buffer = new ArrayBuffer(44 + dataSize);
+            var view = new DataView(buffer);
+            var pos = 0;
+            function writeStr(s) { for (var i = 0; i < s.length; i++) view.setUint8(pos++, s.charCodeAt(i)); }
+            writeStr('RIFF');
+            view.setUint32(pos, 36 + dataSize, true); pos += 4;
+            writeStr('WAVE');
+            writeStr('fmt ');
+            view.setUint32(pos, 16, true); pos += 4;
+            view.setUint16(pos, 1, true); pos += 2;
+            view.setUint16(pos, numChannels, true); pos += 2;
+            view.setUint32(pos, sampleRate, true); pos += 4;
+            view.setUint32(pos, byteRate, true); pos += 4;
+            view.setUint16(pos, blockAlign, true); pos += 2;
+            view.setUint16(pos, bitsPerSample, true); pos += 2;
+            writeStr('data');
+            view.setUint32(pos, dataSize, true); pos += 4;
+            var max = 0;
+            for (var i = 0; i < samples.length; i++) if (Math.abs(samples[i]) > max) max = Math.abs(samples[i]);
+            var scale = max > 0 ? 32767 / max : 1;
+            for (var i = 0; i < samples.length; i++) view.setInt16(pos, Math.max(-32768, Math.min(32767, Math.floor(samples[i] * scale))), true), pos += 2;
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+        async function runCentroidAudio() {
+            var fa = document.getElementById('div-wav-a').files[0], fb = document.getElementById('div-wav-b').files[0];
+            if (!fa || !fb) { document.getElementById('div-centroid-audio-msg').textContent = 'WAV A と WAV B を選択してください。'; return; }
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            try {
+                document.getElementById('div-centroid-audio-msg').textContent = '計算中…';
+                var bufA = await fetch(URL.createObjectURL(fa)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
+                var bufB = await fetch(URL.createObjectURL(fb)).then(function(r) { return r.arrayBuffer(); }).then(function(ab) { return ctx.decodeAudioData(ab); });
+                var p = spectrumToDistribution(bufA, 32), q = spectrumToDistribution(bufB, 32);
+                var centroidDist = chord_gap_centroid([p, q], [1, 1], 0, 0.5, 0.25, 20, 'squared');
+                var frame = centroidToAudio(centroidDist, 32, 1024);
+                var sr = bufA.sampleRate;
+                var durationSec = 2;
+                var totalLen = Math.floor(sr * durationSec);
+                var full = new Float32Array(totalLen);
+                for (var i = 0; i < totalLen; i++) full[i] = frame[i % frame.length];
+                var maxVal = 0;
+                for (var i = 0; i < full.length; i++) if (Math.abs(full[i]) > maxVal) maxVal = Math.abs(full[i]);
+                if (maxVal > 0) for (var i = 0; i < full.length; i++) full[i] *= 0.9 / maxVal;
+                var ab = ctx.createBuffer(1, full.length, sr);
+                ab.getChannelData(0).set(full);
+                var blob = float32ToWavBlob(full, sr);
+                var url = URL.createObjectURL(blob);
+                document.getElementById('centroid-audio').src = url;
+                document.getElementById('div-centroid-audio-msg').textContent = 'Chord Gap セントロイドから逆FFTで生成した中間音（約' + durationSec + '秒）。再生ボタンで聴けます。';
+                document.getElementById('centroid-download').href = url;
+                document.getElementById('centroid-download').download = 'chord_gap_centroid.wav';
+            } catch (e) { document.getElementById('div-centroid-audio-msg').textContent = 'エラー: ' + e.message; }
+        }
         async function runDivergenceFromWav() {
             var fa = document.getElementById('div-wav-a').files[0], fb = document.getElementById('div-wav-b').files[0];
             if (!fa || !fb) { document.getElementById('div-wav-result').textContent = 'WAV A と WAV B の両方を選択してください。'; return; }
@@ -888,6 +983,8 @@
                 var Z05_sum = Z_delta_disc(p, q, 0.5);
                 var J05 = skew_jensen(p, q, 0.5, 'squared');
                 var Z05_exp = Math.exp(-J05);
+                var J05_entropy = skew_jensen(p, q, 0.5, 'entropy');
+                var Z05_exp_entropy = Math.exp(-J05_entropy);
                 var taylorSq = taylor_lagrange_bregman(p, q, 'squared');
                 var taylorEnt = taylor_lagrange_bregman(p, q, 'entropy');
                 var centroidAB = chord_gap_centroid([p, q], [1, 1], 0, 0.5, 0.25, 20, 'squared');
@@ -907,7 +1004,7 @@
                 lines.push('  (α,β,γ)=(' + ga + ',' + gb + ',' + gg + ') =>  ' + GenBhat.toFixed(6));
                 lines.push('  (α,β,γ)=(' + ga2 + ',' + gb2 + ',' + gg2 + ') =>  ' + GenBhat2.toFixed(6));
                 lines.push('【Eq.8】二部サブファミリー β=1/2 整合性 (γ=0.3): J_F^{1/2,γ} = ' + bipartite.chord_gap.toFixed(6) + ',  2γJ_F = ' + bipartite['2*gamma*J_F'].toFixed(6) + ', 差 = ' + bipartite.diff.toFixed(6));
-                lines.push('【Eq.10】Z_δ=exp(-J_F^δ): Z_0.5(積分)= ' + Z05_sum.toFixed(6) + ',  exp(-J_F^0.5)= ' + Z05_exp.toFixed(6));
+                lines.push('【Eq.10】Z_δ=exp(-J_F^δ): Z_0.5(積分)= ' + Z05_sum.toFixed(6) + ',  F=squared exp(-J^0.5)= ' + Z05_exp.toFixed(6) + ',  F=entropy exp(-J^0.5)= ' + Z05_exp_entropy.toFixed(6) + '（情報幾何では指数型で Z=exp(-J) に対応）');
                 lines.push('');
                 lines.push('========== Taylor–Lagrange（理論3・9）Eq.(12)(13)(15) ==========');
                 lines.push('F=squared: Bregman真値 = ' + taylorSq.Bregman_true.toFixed(6) + ',  Taylor近似 = ' + taylorSq.Taylor_Lagrange_approx.toFixed(6) + ',  近似誤差 = ' + taylorSq.approximation_error.toFixed(6));
@@ -951,7 +1048,8 @@
                     },
                     'Eq8_Bipartite': bipartite,
                     'Eq10_Z_half_integral': Z05_sum,
-                    'Eq10_exp_neg_J_half': Z05_exp,
+                    'Eq10_exp_neg_J_half_squared': Z05_exp,
+                    'Eq10_exp_neg_J_half_entropy': Z05_exp_entropy,
                     'TaylorLagrange_F_squared': taylorSq,
                     'TaylorLagrange_F_entropy': taylorEnt,
                     'Centroid_WAV_A_B': centroidAB,
